@@ -7,11 +7,15 @@ dependencies = [
     "flask>=3.1",
     "gunicorn>=25.3.0",
     "peewee>=3.17",
-    "pytest>=8.0",
-    "pytest-cov>=5.0",
     "psycopg2-binary>=2.9",
     "python-dotenv>=1.0",
     "redis>=5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
 ]
 
 [tool.pytest.ini_options]

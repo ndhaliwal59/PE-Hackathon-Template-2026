@@ -1,8 +1,12 @@
 # Reliability
 
-This document collects the reliability notes that used to live in README, plus the Docker-native restart verification flow.
-
 ## Bronze Reliability
+
+Install dev dependencies once before running test commands:
+
+```bash
+uv sync --extra dev
+```
 
 Run the unit suite locally:
 
@@ -103,6 +107,7 @@ docker compose ps
 ```
 
 In the output, note the app container name in the `NAME` column.
+(Should be something like `<foldername>_app_1` depending on your directory name and compose project settings.)
 
 4. Capture the app container's current restart metadata before the failure:
 

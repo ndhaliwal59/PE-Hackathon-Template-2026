@@ -63,6 +63,12 @@ curl http://localhost:5000/health
 
 ## Bronze Reliability
 
+Install dev dependencies once before running test commands:
+
+```bash
+uv sync --extra dev
+```
+
 Run the unit suite locally:
 
 ```bash
