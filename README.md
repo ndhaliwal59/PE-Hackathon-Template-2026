@@ -4,6 +4,8 @@ A minimal hackathon starter template. You get the scaffolding and database wirin
 
 **Stack:** Flask · Peewee ORM · PostgreSQL · uv
 
+For the built-in URL shortener (HTTP routes and loading seed CSVs), see **[URL_SHORTENER.md](URL_SHORTENER.md)**.
+
 ## **Important**
 
 You need to work with around the seed files that you can find in [MLH PE Hackathon](https://mlh-pe-hackathon.com) platform. This will help you build the schema for the database and have some data to do some testing and submit your project for judging. If you need help with this, reach out on Discord or on the Q&A tab on the platform.
