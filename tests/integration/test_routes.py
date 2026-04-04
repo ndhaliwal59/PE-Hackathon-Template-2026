@@ -55,7 +55,7 @@ def test_health_endpoint_returns_ok(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.get_json() == {"status": "ok"}
+    assert response.get_json() == {"status": "broken"}
 
 
 def test_list_urls_returns_json(client):
@@ -265,4 +265,4 @@ def test_list_user_urls_returns_only_matching_urls(client):
     data = response.get_json()
     assert len(data) == 1
     assert data[0]["short_code"] == "code1"
-    assert data[0]["user"] == u1.id
+    assert data[0]["user"] == u1.id

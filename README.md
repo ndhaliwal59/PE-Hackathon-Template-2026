@@ -104,7 +104,7 @@ Enforce the Silver coverage target locally (>= 50%):
 uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing --cov-fail-under=50
 ```
 
-Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml).
+Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml). A simulated deployment job is also configured, which will be blocked and skipped if any tests fail or code coverage drops below the limit.
 
 ### Error Handling
 
