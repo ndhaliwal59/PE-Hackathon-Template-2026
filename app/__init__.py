@@ -13,6 +13,14 @@ def health_payload():
     return {"status": "ok"}
 
 
+def request_log_level(status_code):
+    if status_code >= 500:
+        return logging.ERROR
+    if status_code >= 400:
+        return logging.WARNING
+    return logging.INFO
+
+
 def configure_logging(app):
     handler = logging.StreamHandler()
     handler.setFormatter(
@@ -54,7 +62,8 @@ def create_app():
             if started_at is not None
             else None
         )
-        app.logger.info(
+        app.logger.log(
+            request_log_level(response.status_code),
             "request completed",
             extra={
                 "method": request.method,

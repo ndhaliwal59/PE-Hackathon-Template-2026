@@ -1,5 +1,6 @@
 import io
 import json
+import logging
 
 import pytest
 from datetime import datetime, timezone
@@ -72,6 +73,54 @@ def test_metrics_endpoint_returns_cpu_and_memory_usage(client):
     assert isinstance(data["system_memory"]["total_bytes"], (int, float))
     assert isinstance(data["system_memory"]["used_bytes"], (int, float))
     assert isinstance(data["system_memory"]["percent"], (int, float))
+
+
+def test_request_log_level_info_for_success(client, caplog):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+    try:
+        response = client.get("/health")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 200
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/health"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.INFO
+
+
+def test_request_log_level_warning_for_client_error(client, caplog):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+    try:
+        response = client.get("/urls/999")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 404
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/urls/999"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.WARNING
+
+
+def test_request_log_level_error_for_server_error(client, caplog, monkeypatch):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+
+    def _boom():
+        raise RuntimeError("forced test error")
+
+    monkeypatch.setattr(app_module, "health_payload", _boom)
+
+    try:
+        response = client.get("/health")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 500
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/health"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.ERROR
 
 
 def test_list_urls_returns_json(client):
