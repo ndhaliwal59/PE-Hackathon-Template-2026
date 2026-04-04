@@ -157,8 +157,13 @@ def delete_url(url_id: int):
         url = Url.get_by_id(url_id)
     except DoesNotExist:
         return jsonify(error="url not found"), 404
-    url.delete_instance()
+    url.delete_instance(recursive=True)
     return "", 204
+
+
+@urls_bp.get("/urls/<short_code>/redirect")
+def redirect_by_short_code(short_code: str):
+    return resolve_short_code(short_code)
 
 
 @urls_bp.get("/s/<short_code>")

@@ -165,7 +165,7 @@ def delete_user(user_id: int):
         user = User.get_by_id(user_id)
     except DoesNotExist:
         return jsonify(error="user not found"), 404
-    user.delete_instance()
+    user.delete_instance(recursive=True)
     return "", 204
 
 
