@@ -13,6 +13,12 @@ x-app: &app
       condition: service_healthy
 
 services:
+  app:
+    <<: *app
+    restart: always
+    ports:
+      - "5000:5000"
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped

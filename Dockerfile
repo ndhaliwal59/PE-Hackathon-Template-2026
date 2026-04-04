@@ -10,14 +10,19 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-cache --no-dev
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tini ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml ./
+RUN uv sync --no-cache --no-dev
 
 COPY . .
-RUN uv sync --frozen --no-cache --no-dev
+RUN uv sync --no-cache --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "exec gunicorn -w 1 -b 0.0.0.0:5000 'app:create_app()'"]
+ENTRYPOINT ["tini", "--"]
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:create_app()"]
