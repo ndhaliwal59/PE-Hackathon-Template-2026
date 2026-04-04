@@ -55,7 +55,7 @@ def test_health_endpoint_returns_ok(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.get_json() == {"status": "broken"}
+    assert response.get_json() == {"status": "ok"}
 
 
 def test_list_urls_returns_json(client):
