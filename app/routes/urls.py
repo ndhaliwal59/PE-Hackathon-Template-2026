@@ -1,14 +1,17 @@
+import json
 import secrets
 import string
 from datetime import datetime
 
 from flask import Blueprint, jsonify, redirect, request
 from peewee import DoesNotExist, fn
-from playhouse.shortcuts import model_to_dict
 
 from app.cache import get_short_entry, set_short_entry
+from app.database import db
+from app.models.event import Event
 from app.models.url import Url
 from app.models.user import User
+from app.serializers import url_to_json
 
 urls_bp = Blueprint("urls", __name__)
 
@@ -23,13 +26,29 @@ def _allocate_short_code() -> str:
     raise RuntimeError("could not allocate short code")
 
 
+def _record_url_created_event(url: Url) -> None:
+    next_eid = (Event.select(fn.MAX(Event.id)).scalar() or 0) + 1
+    details = json.dumps(
+        {"short_code": url.short_code, "original_url": url.original_url},
+        separators=(",", ":"),
+    )
+    Event.create(
+        id=next_eid,
+        url=url,
+        user=url.user_id,
+        event_type="created",
+        occurred_at=datetime.now(),
+        details=details,
+    )
+
+
 @urls_bp.get("/urls")
 def list_urls():
     q = Url.select().order_by(Url.id)
     user_id = request.args.get("user_id", type=int)
     if user_id is not None:
         q = q.where(Url.user_id == user_id)
-    return jsonify([model_to_dict(u, recurse=False) for u in q])
+    return jsonify([url_to_json(u) for u in q])
 
 
 @urls_bp.get("/urls/<int:url_id>")
@@ -38,7 +57,7 @@ def get_url(url_id: int):
         url = Url.get_by_id(url_id)
     except DoesNotExist:
         return jsonify(error="url not found"), 404
-    return jsonify(model_to_dict(url, recurse=False))
+    return jsonify(url_to_json(url))
 
 
 @urls_bp.post("/urls")
@@ -63,24 +82,55 @@ def create_url():
         return jsonify(error="user not found"), 404
 
     now = datetime.now()
-    next_id = (Url.select(fn.MAX(Url.id)).scalar() or 0) + 1
-    short_code = _allocate_short_code()
-    url = Url.create(
-        id=next_id,
-        user_id=user_id,
-        short_code=short_code,
-        original_url=original_url.strip(),
-        title=title.strip() if isinstance(title, str) else "",
-        is_active=True,
-        created_at=now,
-        updated_at=now,
-    )
+    with db.atomic():
+        next_id = (Url.select(fn.MAX(Url.id)).scalar() or 0) + 1
+        short_code = _allocate_short_code()
+        url = Url.create(
+            id=next_id,
+            user_id=user_id,
+            short_code=short_code,
+            original_url=original_url.strip(),
+            title=title.strip() if isinstance(title, str) else "",
+            is_active=True,
+            created_at=now,
+            updated_at=now,
+        )
+        _record_url_created_event(url)
     set_short_entry(
         short_code,
         original_url=url.original_url,
         is_active=url.is_active,
     )
-    return jsonify(model_to_dict(url, recurse=False)), 201
+    return jsonify(url_to_json(url)), 201
+
+
+@urls_bp.put("/urls/<int:url_id>")
+def update_url(url_id: int):
+    try:
+        url = Url.get_by_id(url_id)
+    except DoesNotExist:
+        return jsonify(error="url not found"), 404
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"errors": {"_schema": "body must be a JSON object"}}), 422
+    if "title" in data:
+        t = data["title"]
+        if not isinstance(t, str):
+            return jsonify({"errors": {"title": "must be a string"}}), 422
+        url.title = t.strip()
+    if "is_active" in data:
+        v = data["is_active"]
+        if not isinstance(v, bool):
+            return jsonify({"errors": {"is_active": "must be a boolean"}}), 422
+        url.is_active = v
+    url.updated_at = datetime.now()
+    url.save()
+    set_short_entry(
+        url.short_code,
+        original_url=url.original_url,
+        is_active=url.is_active,
+    )
+    return jsonify(url_to_json(url))
 
 
 @urls_bp.get("/s/<short_code>")

@@ -1,3 +1,6 @@
+import io
+import json
+
 import pytest
 from datetime import datetime, timezone
 from peewee import SqliteDatabase
@@ -91,7 +94,7 @@ def test_list_urls_filters_by_user_id(client):
     data = response.get_json()
     assert len(data) == 1
     assert data[0]["short_code"] == "code1"
-    assert data[0]["user"] == u1.id
+    assert data[0]["user_id"] == u1.id
 
 
 def test_get_url_missing_returns_404(client):
@@ -135,7 +138,7 @@ def test_create_url_with_valid_payload_returns_201(client):
 
     assert response.status_code == 201
     body = response.get_json()
-    assert body["user"] == u.id
+    assert body["user_id"] == u.id
     assert body["original_url"] == "https://example.com/new"
     assert body["title"] == "New URL"
     assert body["is_active"] is True
@@ -264,7 +267,7 @@ def test_list_user_urls_returns_only_matching_urls(client):
     data = response.get_json()
     assert len(data) == 1
     assert data[0]["short_code"] == "code1"
-    assert data[0]["user"] == u1.id
+    assert data[0]["user_id"] == u1.id
 
 
 def test_method_not_allowed_returns_405(client):
@@ -294,3 +297,135 @@ def test_malformed_json_returns_400(client):
     response = client.post("/urls", data='{"bad": "json', content_type="application/json")
     assert response.status_code == 400
     assert response.get_json() == {"error": "user_id and original_url are required"}
+
+
+def test_bulk_users_csv_returns_count(client):
+    csv_content = (
+        "username,email,created_at\n"
+        "bulk_a,bulk_a@example.com,2026-01-01 00:00:00\n"
+        "bulk_b,bulk_b@example.com,2026-01-02 00:00:00\n"
+    )
+    data = {"file": (io.BytesIO(csv_content.encode("utf-8")), "users.csv")}
+    response = client.post("/users/bulk", data=data, content_type="multipart/form-data")
+    assert response.status_code == 200
+    assert response.get_json() == {"count": 2}
+
+
+def test_post_user_returns_201(client):
+    response = client.post(
+        "/users",
+        json={"username": "newu", "email": "newu@example.com"},
+    )
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["username"] == "newu"
+    assert body["email"] == "newu@example.com"
+    assert "id" in body
+    assert "created_at" in body
+
+
+def test_post_user_invalid_username_type_returns_422(client):
+    response = client.post(
+        "/users",
+        json={"username": 12345, "email": "x@example.com"},
+    )
+    assert response.status_code == 422
+    assert "errors" in response.get_json()
+
+
+def test_put_user_updates_username(client):
+    u = User.create(username="old", email="old@example.com", created_at=datetime.now(timezone.utc))
+    response = client.put(f"/users/{u.id}", json={"username": "newname"})
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["username"] == "newname"
+    assert body["email"] == "old@example.com"
+
+
+def test_put_user_missing_returns_404(client):
+    response = client.put("/users/99999", json={"username": "nope"})
+    assert response.status_code == 404
+
+
+def test_list_users_with_pagination_envelope(client):
+    User.create(username="p1", email="p1@example.com", created_at=datetime(2026, 1, 1))
+    User.create(username="p2", email="p2@example.com", created_at=datetime(2026, 1, 2))
+
+    response = client.get("/users?page=1&per_page=1")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "users" in data
+    assert len(data["users"]) == 1
+    assert data["total"] >= 2
+    assert data["page"] == 1
+    assert data["per_page"] == 1
+
+
+def test_put_url_updates_title_and_active(client):
+    u = User.create(username="u", email="u@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="putcode",
+        original_url="https://example.com/x",
+        title="Old",
+        is_active=True,
+        created_at=datetime(2026, 1, 1),
+        updated_at=datetime(2026, 1, 1),
+    )
+    response = client.put(
+        f"/urls/{url_obj.id}",
+        json={"title": "Updated Title", "is_active": False},
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["title"] == "Updated Title"
+    assert body["is_active"] is False
+    assert body["short_code"] == "putcode"
+
+
+def test_put_url_missing_returns_404(client):
+    response = client.put("/urls/99999", json={"title": "x"})
+    assert response.status_code == 404
+
+
+def test_list_events_returns_array(client):
+    u = User.create(username="eu", email="eu@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="evc",
+        original_url="https://example.com/e",
+        title="E",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    Event.create(
+        id=1,
+        url=url_obj,
+        user=u,
+        event_type="created",
+        occurred_at=datetime(2026, 1, 1, 12, 0, 0),
+        details=json.dumps({"short_code": "evc", "original_url": "https://example.com/e"}),
+    )
+    response = client.get("/events")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 1
+    assert data[0]["url_id"] == url_obj.id
+    assert data[0]["user_id"] == u.id
+    assert data[0]["event_type"] == "created"
+    assert data[0]["details"]["short_code"] == "evc"
+
+
+def test_create_url_inserts_created_event(client):
+    u = User.create(username="evu", email="evu@example.com", created_at=datetime.now(timezone.utc))
+    response = client.post(
+        "/urls",
+        json={"user_id": u.id, "original_url": "https://example.com/newev", "title": "T"},
+    )
+    assert response.status_code == 201
+    url_id = response.get_json()["id"]
+    ev = Event.get(Event.url_id == url_id)
+    assert ev.event_type == "created"
+    details = json.loads(ev.details)
+    assert details["original_url"] == "https://example.com/newev"
