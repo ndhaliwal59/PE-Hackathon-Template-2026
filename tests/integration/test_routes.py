@@ -27,7 +27,6 @@ def setup_integration_db(monkeypatch):
         def _db_close(exc):
             if not integration_db.is_closed():
                 integration_db.close()
-                pass
                 
     # Prevent create_app from initializing real DB by patching the imported reference in app/__init__.py
     monkeypatch.setattr("app.init_db", test_init_db)
