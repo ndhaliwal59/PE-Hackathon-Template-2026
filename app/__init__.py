@@ -24,12 +24,14 @@ def create_app():
     def health():
         return jsonify(health_payload())
 
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return jsonify({"error": "not found"}), 404
+    from werkzeug.exceptions import HTTPException
 
-    @app.errorhandler(500)
-    def internal_error(error):
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(e):
+        return jsonify({"error": e.name.lower()}), e.code
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
         return jsonify({"error": "internal server error"}), 500
 
     return app

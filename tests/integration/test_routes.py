@@ -266,3 +266,32 @@ def test_list_user_urls_returns_only_matching_urls(client):
     assert len(data) == 1
     assert data[0]["short_code"] == "code1"
     assert data[0]["user"] == u1.id
+
+
+def test_method_not_allowed_returns_405(client):
+    response = client.post("/health")
+    assert response.status_code == 405
+    assert response.get_json() == {"error": "method not allowed"}
+
+
+def test_internal_error_returns_500(client, monkeypatch):
+    import app.routes.urls as urls_routes
+    def fake_select(*args, **kwargs):
+        raise RuntimeError("simulated crash")
+    
+    monkeypatch.setattr(urls_routes.Url, "select", fake_select)
+    response = client.get("/urls")
+    assert response.status_code == 500
+    assert response.get_json() == {"error": "internal server error"}
+
+
+def test_unhandled_route_returns_404(client):
+    response = client.get("/this_route_does_not_exist")
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "not found"}
+
+
+def test_malformed_json_returns_400(client):
+    response = client.post("/urls", data='{"bad": "json', content_type="application/json")
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "user_id and original_url are required"}
