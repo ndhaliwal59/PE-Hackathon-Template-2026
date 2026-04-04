@@ -29,7 +29,12 @@ Example response shape:
 ```json
 {
   "cpu_percent": 0.0,
-  "memory_percent": 0.0
+  "memory_percent": 0.0,
+  "system_memory": {
+    "total_bytes": 0,
+    "used_bytes": 0,
+    "percent": 0.0
+  }
 }
 ```
 

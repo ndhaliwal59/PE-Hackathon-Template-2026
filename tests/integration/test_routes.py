@@ -65,9 +65,13 @@ def test_metrics_endpoint_returns_cpu_and_memory_usage(client):
 
     assert response.status_code == 200
     data = response.get_json()
-    assert set(["cpu_percent", "memory_percent"]).issubset(data)
+    assert set(["cpu_percent", "memory_percent", "system_memory"]).issubset(data)
     assert isinstance(data["cpu_percent"], (int, float))
     assert isinstance(data["memory_percent"], (int, float))
+    assert set(["total_bytes", "used_bytes", "percent"]).issubset(data["system_memory"])
+    assert isinstance(data["system_memory"]["total_bytes"], (int, float))
+    assert isinstance(data["system_memory"]["used_bytes"], (int, float))
+    assert isinstance(data["system_memory"]["percent"], (int, float))
 
 
 def test_list_urls_returns_json(client):
