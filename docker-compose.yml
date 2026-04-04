@@ -1,38 +1,67 @@
-services:
-  db:
-    image: postgres:16
-    restart: always
-    environment:
-      POSTGRES_DB: hackathon_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d hackathon_db"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+x-app: &app
+  build: .
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    DATABASE_HOST: postgres
+    FLASK_DEBUG: "false"
+    REDIS_URL: redis://redis:6379/0
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
 
+services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    <<: *app
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_NAME: hackathon_db
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      FLASK_DEBUG: "false"
     ports:
       - "5000:5000"
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_DB: ${DATABASE_NAME:-hackathon_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web1:
+    <<: *app
+
+  web2:
+    <<: *app
+
+  web3:
+    <<: *app
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web1
+      - web2
+      - web3
+    restart: unless-stopped
+
 volumes:
-  postgres_data:
+  pgdata:
