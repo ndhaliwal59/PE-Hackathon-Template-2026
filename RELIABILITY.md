@@ -100,6 +100,7 @@ curl http://localhost:5000/health
 ```
 
 This should return 200 OK with the JSON health response.
+If you get a temporary connection error right after `docker compose up -d --build`, wait a few seconds and retry this health check once.
 
 3. Check the running containers to confirm the app container is up before the failure test:
 
