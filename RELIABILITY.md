@@ -34,3 +34,81 @@ Submitting `POST` requests to `GET` endpoints natively triggers Werkzeug's HTTP 
   "error": "method not allowed"
 }
 ```
+
+## 5. Chaos Mode (Automatic Restart Verification)
+
+The application is configured to recover automatically if its running process fails unexpectedly. This can be verified using Docker’s container metadata together with the health endpoint.
+
+### Verification steps
+
+1. Start the stack so both the database and app container are running:
+
+```powershell
+docker compose up -d --build
+```
+
+2. Confirm the service is healthy before the failure test:
+
+```powershell
+curl http://localhost:5000/health
+```
+
+This should return 200 OK with the JSON health response.
+
+3. Check the running containers to confirm the app container is up before the failure test:
+
+```powershell
+docker compose ps
+```
+
+4. Capture the app container’s current restart metadata before the failure:
+
+```powershell
+docker inspect pe-hackathon-template-2026-app-1 --format="RestartCount={{.RestartCount}} StartedAt={{.State.StartedAt}} Status={{.State.Status}}"
+```
+
+This gives the baseline values to compare after the process is terminated.
+
+5. Open a shell inside the app container:
+
+```powershell
+docker compose exec app sh
+```
+
+6. Inside the container, find the running child application process:
+
+```sh
+cat /proc/1/task/1/children
+```
+
+This prints the child PID for the application process.
+
+7. Still inside the container, terminate that child process:
+
+```sh
+kill -9 <child-pid>
+```
+
+Replace <child-pid> with the number from the previous step.
+
+8. Exit the container shell if not already done:
+
+```sh
+exit
+```
+
+8. Wait a moment and run the same inspect command again:
+
+```powershell
+docker inspect pe-hackathon-template-2026-app-1 --format="RestartCount={{.RestartCount}} StartedAt={{.State.StartedAt}} Status={{.State.Status}}"
+```
+
+This should show an incremented `RestartCount` and a new `StartedAt` timestamp, confirming that the orchestrator detected the failure and restarted the process.
+
+9. Confirm the app is healthy again:
+
+```powershell
+curl http://localhost:5000/health
+```
+
+This should return 200 OK with the JSON health response.
