@@ -14,6 +14,7 @@ You need to work with around the seed files that you can find in [MLH PE Hackath
 
 - **uv** — a fast Python package manager that handles Python versions, virtual environments, and dependencies automatically.
   Install it with:
+
   ```bash
   # macOS / Linux
   curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -21,19 +22,21 @@ You need to work with around the seed files that you can find in [MLH PE Hackath
   # Windows (PowerShell)
   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
   ```
+
   For other methods see the [uv installation docs](https://docs.astral.sh/uv/getting-started/installation/).
+
 - PostgreSQL running locally (you can use Docker or a local instance)
 
 ## uv Basics
 
 `uv` manages your Python version, virtual environment, and dependencies automatically — no manual `python -m venv` needed.
 
-| Command | What it does |
-|---------|--------------|
-| `uv sync` | Install all dependencies (creates `.venv` automatically) |
-| `uv run <script>` | Run a script using the project's virtual environment |
-| `uv add <package>` | Add a new dependency |
-| `uv remove <package>` | Remove a dependency |
+| Command               | What it does                                             |
+| --------------------- | -------------------------------------------------------- |
+| `uv sync`             | Install all dependencies (creates `.venv` automatically) |
+| `uv run <script>`     | Run a script using the project's virtual environment     |
+| `uv add <package>`    | Add a new dependency                                     |
+| `uv remove <package>` | Remove a dependency                                      |
 
 ## Quick Start
 
@@ -80,6 +83,28 @@ curl http://localhost:5000/health
 
 CI runs only the unit suite from [tests/unit](tests/unit) using [`.github/workflows/bronze.yml`](.github/workflows/bronze.yml).
 Integration tests live in [tests/integration](tests/integration) and are excluded from the Bronze workflow.
+
+## Silver Reliability
+
+Run integration tests locally:
+
+```bash
+uv run pytest tests/integration
+```
+
+Run tests with coverage for app code only:
+
+```bash
+uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing
+```
+
+Enforce the Silver coverage target locally (>= 50%):
+
+```bash
+uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing --cov-fail-under=50
+```
+
+Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml).
 
 ## Project Structure
 
