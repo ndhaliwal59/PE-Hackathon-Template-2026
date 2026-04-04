@@ -106,6 +106,19 @@ uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing -
 
 Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml).
 
+### Error Handling
+
+The application returns JSON error responses so API clients can handle failures predictably.
+
+* **Route-level 404s** may return resource-specific JSON such as:
+  * `{"error": "url not found"}`
+  * `{"error": "user not found"}`
+  * `{"error": "short code not found"}`
+* **Unhandled 404 errors** return `{"error": "not found"}` with a `404` status code.
+* **Unhandled 500 errors** return `{"error": "internal server error"}` with a `500` status code.
+
+**How this helps reliability**: Returning JSON instead of default HTML error pages gives clients a consistent failure format, makes error handling simpler, and avoids exposing internal traceback details in normal API responses.
+
 ## Project Structure
 
 ```

@@ -24,4 +24,12 @@ def create_app():
     def health():
         return jsonify(health_payload())
 
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return jsonify({"error": "not found"}), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({"error": "internal server error"}), 500
+
     return app
