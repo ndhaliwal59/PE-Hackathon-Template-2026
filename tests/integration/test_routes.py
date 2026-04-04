@@ -60,6 +60,16 @@ def test_health_endpoint_returns_ok(client):
     assert response.get_json() == {"status": "ok"}
 
 
+def test_metrics_endpoint_returns_cpu_and_memory_usage(client):
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert set(["cpu_percent", "memory_percent"]).issubset(data)
+    assert isinstance(data["cpu_percent"], (int, float))
+    assert isinstance(data["memory_percent"], (int, float))
+
+
 def test_list_urls_returns_json(client):
     u = User.create(username="testuser", email="test@example.com", created_at=datetime.now(timezone.utc))
     Url.create(

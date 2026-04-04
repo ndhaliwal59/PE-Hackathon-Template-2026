@@ -61,69 +61,17 @@ curl http://localhost:5000/health
 # → {"status":"ok"}
 ```
 
-## Bronze Reliability
+## Reliability
 
-Install dev dependencies once before running test commands:
+For Bronze, Silver, and Gold reliability guidance, see [RELIABILITY.md](RELIABILITY.md).
 
-```bash
-uv sync --extra dev
-```
+## Incident Response Bronze
 
-Run the unit suite locally:
+For incident response setup, metrics, and log viewing, see [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
 
-```bash
-uv run pytest tests/unit
-```
+## Scalability
 
-Run the app:
-
-```bash
-uv run run.py
-```
-
-Verify `/health`:
-
-```bash
-curl http://localhost:5000/health
-```
-
-CI runs only the unit suite from [tests/unit](tests/unit) using [`.github/workflows/bronze.yml`](.github/workflows/bronze.yml).
-Integration tests live in [tests/integration](tests/integration) and are excluded from the Bronze workflow.
-
-## Silver Reliability
-
-Run integration tests locally:
-
-```bash
-uv run pytest tests/integration
-```
-
-Run tests with coverage for app code only:
-
-```bash
-uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing
-```
-
-Enforce the Silver coverage target locally (>= 50%):
-
-```bash
-uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing --cov-fail-under=50
-```
-
-Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml). A simulated deployment job is also configured, which will be blocked and skipped if any tests fail or code coverage drops below the limit.
-
-### Error Handling
-
-The application returns JSON error responses so API clients can handle failures predictably.
-
-* **Route-level 404s** may return resource-specific JSON such as:
-  * `{"error": "url not found"}`
-  * `{"error": "user not found"}`
-  * `{"error": "short code not found"}`
-* **Unhandled 404 errors** return `{"error": "not found"}` with a `404` status code.
-* **Unhandled 500 errors** return `{"error": "internal server error"}` with a `500` status code.
-
-**How this helps reliability**: Returning JSON instead of default HTML error pages gives clients a consistent failure format, makes error handling simpler, and avoids exposing internal traceback details in normal API responses.
+For Bronze, Silver, and Gold scalability guidance, see [SCALABILITY.md](SCALABILITY.md).
 
 ## Project Structure
 
