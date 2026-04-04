@@ -159,6 +159,16 @@ def update_user(user_id: int):
     return jsonify(user_to_json(user))
 
 
+@users_bp.delete("/users/<int:user_id>")
+def delete_user(user_id: int):
+    try:
+        user = User.get_by_id(user_id)
+    except DoesNotExist:
+        return jsonify(error="user not found"), 404
+    user.delete_instance()
+    return "", 204
+
+
 @users_bp.get("/users/<int:user_id>/urls")
 def list_user_urls(user_id: int):
     try:

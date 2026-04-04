@@ -26,6 +26,21 @@ def _allocate_short_code() -> str:
     raise RuntimeError("could not allocate short code")
 
 
+def _record_click_event(url: Url) -> None:
+    try:
+        next_eid = (Event.select(fn.MAX(Event.id)).scalar() or 0) + 1
+        Event.create(
+            id=next_eid,
+            url=url.id,
+            user=url.user_id,
+            event_type="click",
+            occurred_at=datetime.now(),
+            details=json.dumps({"short_code": url.short_code}, separators=(",", ":")),
+        )
+    except Exception:
+        pass
+
+
 def _record_url_created_event(url: Url) -> None:
     next_eid = (Event.select(fn.MAX(Event.id)).scalar() or 0) + 1
     details = json.dumps(
@@ -48,6 +63,9 @@ def list_urls():
     user_id = request.args.get("user_id", type=int)
     if user_id is not None:
         q = q.where(Url.user_id == user_id)
+    is_active = request.args.get("is_active")
+    if is_active is not None:
+        q = q.where(Url.is_active == (is_active.lower() in ("true", "1", "yes")))
     return jsonify([url_to_json(u) for u in q])
 
 
@@ -133,6 +151,16 @@ def update_url(url_id: int):
     return jsonify(url_to_json(url))
 
 
+@urls_bp.delete("/urls/<int:url_id>")
+def delete_url(url_id: int):
+    try:
+        url = Url.get_by_id(url_id)
+    except DoesNotExist:
+        return jsonify(error="url not found"), 404
+    url.delete_instance()
+    return "", 204
+
+
 @urls_bp.get("/s/<short_code>")
 def resolve_short_code(short_code: str):
     cache_state, cached = get_short_entry(short_code)
@@ -147,6 +175,11 @@ def resolve_short_code(short_code: str):
             resp.status_code = 410
             resp.headers["X-Cache"] = "HIT"
             return resp
+        try:
+            url_obj = Url.get(Url.short_code == short_code)
+            _record_click_event(url_obj)
+        except DoesNotExist:
+            pass
         resp = redirect(cached["original_url"], code=302)
         resp.headers["X-Cache"] = "HIT"
         return resp
@@ -175,6 +208,7 @@ def resolve_short_code(short_code: str):
         original_url=url.original_url,
         is_active=True,
     )
+    _record_click_event(url)
     resp = redirect(url.original_url, code=302)
     resp.headers["X-Cache"] = label
     return resp
