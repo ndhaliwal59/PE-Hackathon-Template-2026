@@ -48,7 +48,9 @@ def setup_integration_db(monkeypatch):
 
 
 @pytest.fixture()
-def client():
+def client(monkeypatch):
+    # create_app() calls load_dotenv(); dotenv does not override existing env.
+    monkeypatch.setenv("INCIDENT_SIMULATION_ENABLED", "false")
     flask_app = app_module.create_app()
     flask_app.config.update(TESTING=True)
     return flask_app.test_client()
@@ -73,6 +75,30 @@ def test_metrics_endpoint_returns_cpu_and_memory_usage(client):
     assert isinstance(data["system_memory"]["total_bytes"], (int, float))
     assert isinstance(data["system_memory"]["used_bytes"], (int, float))
     assert isinstance(data["system_memory"]["percent"], (int, float))
+
+
+def test_prometheus_metrics_exposes_counter_and_cpu_gauge(client):
+    client.get("/health")
+    response = client.get("/prometheus/metrics")
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert "http_requests_total" in body
+    assert "app_process_cpu_percent" in body
+
+
+def test_simulation_routes_disabled_by_default(client):
+    assert client.get("/simulation/http-500").status_code == 404
+
+
+def test_simulation_routes_when_enabled(monkeypatch):
+    monkeypatch.setenv("INCIDENT_SIMULATION_ENABLED", "true")
+    flask_app = app_module.create_app()
+    flask_app.config.update(TESTING=True)
+    tc = flask_app.test_client()
+    assert tc.get("/simulation/http-500").status_code == 500
+    assert tc.post("/simulation/cpu-burn/start").status_code == 200
+    assert tc.post("/simulation/cpu-burn/stop").status_code == 200
 
 
 def test_request_log_level_info_for_success(client, caplog):

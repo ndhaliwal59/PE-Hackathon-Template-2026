@@ -1,12 +1,24 @@
 import logging
 from time import perf_counter
 
+import psutil
 from dotenv import load_dotenv
-from flask import Flask, g, jsonify, request
+from flask import Flask, Response, g, jsonify, request
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, generate_latest
 from pythonjsonlogger.json import JsonFormatter
 
 from app.database import db, init_db
 from app.routes import register_routes
+
+http_requests_total = Counter(
+    "http_requests_total",
+    "Total HTTP requests",
+    ["method", "status_group"],
+)
+app_process_cpu_percent = Gauge(
+    "app_process_cpu_percent",
+    "Process CPU percent (psutil.Process, same semantics as JSON /metrics)",
+)
 
 
 def health_payload():
@@ -72,7 +84,18 @@ def create_app():
                 "duration_ms": duration_ms,
             },
         )
+        if request.path != "/prometheus/metrics":
+            status_group = f"{response.status_code // 100}xx"
+            http_requests_total.labels(
+                method=request.method, status_group=status_group
+            ).inc()
         return response
+
+    @app.get("/prometheus/metrics")
+    def prometheus_metrics():
+        # interval=0.1 blocks briefly so the sample reflects recent CPU (0.0 often reads 0 at scrape time).
+        app_process_cpu_percent.set(psutil.Process().cpu_percent(interval=0.1))
+        return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
     @app.route("/health")
     def health():

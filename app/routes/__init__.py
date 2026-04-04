@@ -7,6 +7,7 @@ def register_routes(app):
     """
     from app.routes.events import events_bp
     from app.routes.metrics import metrics_bp
+    from app.routes.simulation import simulation_bp, simulation_enabled
     from app.routes.urls import urls_bp
     from app.routes.users import users_bp
 
@@ -14,3 +15,5 @@ def register_routes(app):
     app.register_blueprint(urls_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(metrics_bp)
+    if simulation_enabled():
+        app.register_blueprint(simulation_bp)

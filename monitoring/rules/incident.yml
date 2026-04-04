@@ -1,0 +1,34 @@
+groups:
+  - name: incident
+    rules:
+      - alert: ServiceDown
+        expr: probe_success{job="blackbox"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Health check via nginx is failing (blackbox probe)."
+          description: "probe_success is 0 for {{ $labels.instance }} for at least 2 minutes."
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status_group="5xx"}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 5% of HTTP responses are 5xx over 5 minutes."
+          description: "Elevated server error rate across scraped web replicas."
+
+      - alert: HighCPU
+        expr: max(app_process_cpu_percent{job="web"}) > 90
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Process CPU percent exceeded 90% for 2 minutes."
+          description: "Max app_process_cpu_percent across web job is high (psutil, per replica)."
