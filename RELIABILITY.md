@@ -66,6 +66,7 @@ uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing -
 ```
 
 Gold also expects graceful failure responses and restart verification. Use the Error Handling and Chaos Mode sections below.
+Gold CI coverage enforcement is configured in [`.github/workflows/gold.yml`](.github/workflows/gold.yml).
 
 ## Error Handling
 
