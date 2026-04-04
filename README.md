@@ -58,6 +58,29 @@ curl http://localhost:5000/health
 # → {"status":"ok"}
 ```
 
+## Bronze Reliability
+
+Run the unit suite locally:
+
+```bash
+uv run pytest tests/unit
+```
+
+Run the app:
+
+```bash
+uv run run.py
+```
+
+Verify `/health`:
+
+```bash
+curl http://localhost:5000/health
+```
+
+CI runs only the unit suite from [tests/unit](tests/unit) using [`.github/workflows/bronze.yml`](.github/workflows/bronze.yml).
+Integration tests live in [tests/integration](tests/integration) and are excluded from the Bronze workflow.
+
 ## Project Structure
 
 ```

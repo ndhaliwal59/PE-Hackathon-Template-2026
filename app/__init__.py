@@ -5,6 +5,10 @@ from app.database import init_db
 from app.routes import register_routes
 
 
+def health_payload():
+    return {"status": "ok"}
+
+
 def create_app():
     load_dotenv()
 
@@ -18,6 +22,6 @@ def create_app():
 
     @app.route("/health")
     def health():
-        return jsonify(status="ok")
+        return jsonify(health_payload())
 
     return app
