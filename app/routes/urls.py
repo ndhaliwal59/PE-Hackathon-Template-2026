@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, redirect, request
 from peewee import DoesNotExist, fn
 from playhouse.shortcuts import model_to_dict
 
+from app.cache import get_short_entry, set_short_entry
 from app.models.url import Url
 from app.models.user import User
 
@@ -74,15 +75,56 @@ def create_url():
         created_at=now,
         updated_at=now,
     )
+    set_short_entry(
+        short_code,
+        original_url=url.original_url,
+        is_active=url.is_active,
+    )
     return jsonify(model_to_dict(url, recurse=False)), 201
 
 
 @urls_bp.get("/s/<short_code>")
 def resolve_short_code(short_code: str):
+    cache_state, cached = get_short_entry(short_code)
+    if cache_state == "HIT" and cached is not None:
+        if cached.get("missing"):
+            resp = jsonify(error="short code not found")
+            resp.status_code = 404
+            resp.headers["X-Cache"] = "HIT"
+            return resp
+        if not cached["is_active"]:
+            resp = jsonify(error="link is inactive")
+            resp.status_code = 410
+            resp.headers["X-Cache"] = "HIT"
+            return resp
+        resp = redirect(cached["original_url"], code=302)
+        resp.headers["X-Cache"] = "HIT"
+        return resp
+
+    label = "MISS" if cache_state == "MISS" else "BYPASS"
     try:
         url = Url.get(Url.short_code == short_code)
     except DoesNotExist:
-        return jsonify(error="short code not found"), 404
+        set_short_entry(short_code, missing=True)
+        resp = jsonify(error="short code not found")
+        resp.status_code = 404
+        resp.headers["X-Cache"] = label
+        return resp
     if not url.is_active:
-        return jsonify(error="link is inactive"), 410
-    return redirect(url.original_url, code=302)
+        set_short_entry(
+            short_code,
+            original_url=url.original_url,
+            is_active=False,
+        )
+        resp = jsonify(error="link is inactive")
+        resp.status_code = 410
+        resp.headers["X-Cache"] = label
+        return resp
+    set_short_entry(
+        short_code,
+        original_url=url.original_url,
+        is_active=True,
+    )
+    resp = redirect(url.original_url, code=302)
+    resp.headers["X-Cache"] = label
+    return resp

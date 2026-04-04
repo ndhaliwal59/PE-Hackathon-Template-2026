@@ -32,3 +32,6 @@ Thumbs.db
 
 # Judging (not visible to participants)
 judging/
+
+# k6 optional export
+scripts/k6/summary.json
