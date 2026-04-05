@@ -4,6 +4,8 @@ This document covers the Bronze and Silver incident response quests for this rep
 
 **Troubleshooting:** If you encounter startup or runtime issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common problems and solutions.
 
+If you want the replicated-service crash recovery demo, see [RELIABILITY.md](RELIABILITY.md#ha-recovery-demo).
+
 ## Run the app
 
 Start the app the same way as the rest of the project:

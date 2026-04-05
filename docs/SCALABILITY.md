@@ -17,6 +17,8 @@ The k6 script simulates **real shortener traffic**: mostly **`GET /s/<code>`** (
 
 **Before the test**
 
+From the repository root:
+
 1. PostgreSQL running, `.env` configured.
 2. API: `uv run run.py`
 3. Seed once: `uv run load_seed.py`
@@ -24,10 +26,10 @@ The k6 script simulates **real shortener traffic**: mostly **`GET /s/<code>`** (
 **Run**
 
 ```bash
-k6 run ../scripts/k6/bronze-baseline.js
+k6 run scripts/k6/bronze-baseline.js
 ```
 
-Optional: `BASE_URL=http://127.0.0.1:5000 k6 run ../scripts/k6/bronze-baseline.js`
+Optional: `BASE_URL=http://127.0.0.1:5000 k6 run scripts/k6/bronze-baseline.js`
 
 **What to save for judging**
 
@@ -84,13 +86,13 @@ curl http://127.0.0.1/health
 ### Load test (200 VUs)
 
 ```bash
-k6 run ../scripts/k6/silver-horde.js
+k6 run scripts/k6/silver-horde.js
 ```
 
 Traffic goes to **Nginx** by default (`BASE_URL` is `http://127.0.0.1`, port 80). Override if you changed the published port:
 
 ```bash
-BASE_URL=http://127.0.0.1:8080 k6 run ../scripts/k6/silver-horde.js
+BASE_URL=http://127.0.0.1:8080 k6 run scripts/k6/silver-horde.js
 ```
 
 The script asserts **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%**. Traffic mix matches Bronze (mostly **`/s/...`** — same shape as [`scripts/k6/bronze-baseline.js`](../scripts/k6/bronze-baseline.js)).
@@ -156,13 +158,13 @@ curl -s -o /dev/null -D - http://127.0.0.1/s/BqJLDM | grep -i x-cache
 ### Load test (500 VUs)
 
 ```bash
-k6 run ../scripts/k6/gold-tsunami.js
+k6 run scripts/k6/gold-tsunami.js
 ```
 
 Export a summary JSON (optional):
 
 ```bash
-k6 run --summary-export=../scripts/k6/summary-gold.json ../scripts/k6/gold-tsunami.js
+k6 run --summary-export=scripts/k6/summary-gold.json scripts/k6/gold-tsunami.js
 ```
 
 The script uses **500 VUs** for **2m**, with thresholds **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%** (same traffic shape as Bronze/Silver: mostly **`/s/...`**).
