@@ -19,6 +19,8 @@ Two setup options are available:
 - [INCIDENT_RESPONSE.md](docs/INCIDENT_RESPONSE.md)
 - [RUNBOOK.md](docs/RUNBOOK.md)
 - [SCALABILITY.md](docs/SCALABILITY.md)
+- [DECISION_LOG.md](docs/DECISION_LOG.md)
+- [CAPACITY_PLAN.md](docs/CAPACITY_PLAN.md)
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## Architecture
@@ -82,6 +84,8 @@ docs/
   INCIDENT_RESPONSE.md
   RUNBOOK.md
   SCALABILITY.md
+  DECISION_LOG.md
+  CAPACITY_PLAN.md
   TROUBLESHOOTING.md
 Dockerfile
 docker-compose.yml
