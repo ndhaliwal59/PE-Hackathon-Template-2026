@@ -521,3 +521,209 @@ def test_create_url_inserts_created_event(client):
     assert ev.event_type == "created"
     details = json.loads(ev.details)
     assert details["original_url"] == "https://example.com/newev"
+
+
+def test_list_events_filters_by_url_user_and_type(client):
+    u = User.create(username="eu2", email="eu2@example.com", created_at=datetime.now(timezone.utc))
+    u2 = User.create(username="eu3", email="eu3@example.com", created_at=datetime.now(timezone.utc))
+    url1 = Url.create(
+        user=u,
+        short_code="evf1",
+        original_url="https://example.com/e1",
+        title="E1",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    url2 = Url.create(
+        user=u2,
+        short_code="evf2",
+        original_url="https://example.com/e2",
+        title="E2",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    Event.create(
+        id=2,
+        url=url1,
+        user=u,
+        event_type="created",
+        occurred_at=datetime(2026, 1, 1, 12, 0, 0),
+        details=json.dumps({"short_code": "evf1"}),
+    )
+    Event.create(
+        id=3,
+        url=url2,
+        user=u2,
+        event_type="click",
+        occurred_at=datetime(2026, 1, 1, 12, 1, 0),
+        details=json.dumps({"short_code": "evf2"}),
+    )
+
+    by_url = client.get(f"/events?url_id={url1.id}")
+    assert by_url.status_code == 200
+    assert len(by_url.get_json()) == 1
+
+    by_user = client.get(f"/events?user_id={u.id}")
+    assert by_user.status_code == 200
+    assert len(by_user.get_json()) == 1
+
+    by_type = client.get("/events?event_type=click")
+    assert by_type.status_code == 200
+    assert len(by_type.get_json()) == 1
+    assert by_type.get_json()[0]["event_type"] == "click"
+
+
+def test_create_event_with_valid_payload_returns_201(client):
+    u = User.create(username="eventuser", email="eventuser@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="event1",
+        original_url="https://example.com/event",
+        title="Event URL",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    response = client.post(
+        "/events",
+        json={
+            "url_id": url_obj.id,
+            "user_id": u.id,
+            "event_type": "clicked",
+            "details": {"source": "test"},
+        },
+    )
+
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["url_id"] == url_obj.id
+    assert body["user_id"] == u.id
+    assert body["event_type"] == "clicked"
+    assert body["details"]["source"] == "test"
+
+
+def test_create_event_with_missing_fields_returns_400(client):
+    response = client.post("/events", json={"url_id": 1})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "url_id, user_id, and event_type are required"}
+
+
+def test_create_event_with_invalid_url_id_returns_400(client):
+    response = client.post(
+        "/events",
+        json={"url_id": "bad", "user_id": 1, "event_type": "clicked"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "url_id must be an integer"}
+
+
+def test_create_event_with_invalid_user_id_returns_400(client):
+    response = client.post(
+        "/events",
+        json={"url_id": 1, "user_id": "bad", "event_type": "clicked"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "user_id must be an integer"}
+
+
+def test_create_event_with_empty_event_type_returns_400(client):
+    response = client.post(
+        "/events",
+        json={"url_id": 1, "user_id": 1, "event_type": "   "},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "event_type must be a non-empty string"}
+
+
+def test_create_event_with_unknown_url_returns_404(client):
+    u = User.create(username="eventmissingurl", email="eventmissingurl@example.com", created_at=datetime.now(timezone.utc))
+
+    response = client.post(
+        "/events",
+        json={"url_id": 9999, "user_id": u.id, "event_type": "clicked"},
+    )
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "url not found"}
+
+
+def test_create_event_with_unknown_user_returns_404(client):
+    u = User.create(username="eventmissinguser", email="eventmissinguser@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="eventmissinguser",
+        original_url="https://example.com/eventmissinguser",
+        title="Event Missing User",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    response = client.post(
+        "/events",
+        json={"url_id": url_obj.id, "user_id": 9999, "event_type": "clicked"},
+    )
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "user not found"}
+
+
+def test_create_event_with_non_object_details_returns_400(client):
+    u = User.create(username="eventdetails", email="eventdetails@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="eventdetails",
+        original_url="https://example.com/eventdetails",
+        title="Event Details",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    response = client.post(
+        "/events",
+        json={"url_id": url_obj.id, "user_id": u.id, "event_type": "clicked", "details": "bad"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "details must be a JSON object"}
+
+
+def test_create_event_without_details_defaults_to_empty_string(client):
+    u = User.create(username="eventnodetails", email="eventnodetails@example.com", created_at=datetime.now(timezone.utc))
+    url_obj = Url.create(
+        user=u,
+        short_code="eventnodetails",
+        original_url="https://example.com/eventnodetails",
+        title="Event No Details",
+        is_active=True,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    response = client.post(
+        "/events",
+        json={"url_id": url_obj.id, "user_id": u.id, "event_type": "clicked"},
+    )
+
+    assert response.status_code == 201
+    body = response.get_json()
+    assert body["details"] == {}
+    event = Event.get(Event.id == body["id"])
+    assert event.details == ""
+
+
+def test_ui_route_serves_frontend_index(client):
+    response = client.get("/ui")
+
+    assert response.status_code == 200
+    assert "text/html" in response.content_type
+    body = response.get_data(as_text=True)
+    assert "<html" in body.lower()
