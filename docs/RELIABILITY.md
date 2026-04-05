@@ -81,9 +81,15 @@ The application returns JSON error responses so API clients can handle failures 
 
 Returning JSON instead of default HTML error pages gives clients a consistent failure format, makes error handling simpler, and avoids exposing internal traceback details in normal API responses.
 
+**Live demo:** Invalid/garbage input returns a controlled error response instead of an unhandled failure.
+Video: https://youtube.com/shorts/HejXgdybKMM
+
 ## Chaos Mode (Automatic Restart Verification)
 
 The application is configured to recover automatically if its running process fails unexpectedly. This can be verified using Docker's container metadata together with the health endpoint.
+
+**Live demo:** The service recovers after the running container/process is terminated, supporting the restart verification described in this section.
+Video: https://youtube.com/shorts/gdvL17P-jf0
 
 ### Verification steps
 
