@@ -64,6 +64,15 @@ curl http://localhost:5000/metrics
 
 If both commands return JSON successfully, the app is running and the incident response Bronze checks are in place.
 
+**Health check response**
+[Bronze health output](assets/evidence/incident-response/bronze-health.txt)
+
+**Metrics endpoint response**
+![Bronze metrics output](assets/evidence/incident-response/bronze-metrics.png)
+
+**Docker services status**
+[Bronze services list](assets/evidence/incident-response/bronze-services.txt)
+
 ## Silver (Prometheus, Alertmanager, Discord)
 
 Silver adds **Prometheus** (rules + scraping), **Blackbox** (synthetic health through nginx), and **Alertmanager** (notifications to **Discord** via webhook). Alert rule definitions live in [`monitoring/rules/incident.yml`](../monitoring/rules/incident.yml). [`monitoring/alertmanager-entrypoint.sh`](../monitoring/alertmanager-entrypoint.sh) merges [`monitoring/alertmanager.yml.tpl`](../monitoring/alertmanager.yml.tpl) with `DISCORD_WEBHOOK_URL` at container start.
@@ -104,8 +113,13 @@ Helper scripts (set `INCIDENT_SIMULATION_ENABLED=true` in `.env` and restart Com
 
 Alerts use `for: 2m` and 15s scrape/evaluation intervals so firing stays **within the 5-minute** quest window after the condition is true.
 
-## Demo Evidence
+**Monitoring endpoints evidence**
+![Silver Prometheus and Alertmanager status](assets/evidence/incident-response/silver-monitoring-ui.png)
 
+**Prometheus scrape endpoint output**
+[Silver Prometheus metrics](assets/evidence/incident-response/silver-prometheus-scrape.txt)
+
+## Demo Evidence
 - **Live demo:** Shows a simulated CPU spike in the monitoring/dashboard view, a high-CPU alert firing after the threshold is exceeded, and a resolved alert after the load ends. This gives a short end-to-end view of detection, alerting, and recovery visibility.  
   Video: https://www.youtube.com/watch?v=FWCv3iMr-m4&t=3s
 
@@ -158,8 +172,10 @@ Grafana starts automatically with `docker compose up -d --build` and is pre-prov
 - Dashboard direct link: [http://localhost:3000/d/incident-command-center](http://localhost:3000/d/incident-command-center)
 - Login: `admin` / `admin` (anonymous viewer access is also enabled)
 
-The dashboard includes:
+**Grafana dashboard configuration and panels**
+![Gold Grafana dashboard details](assets/evidence/incident-response/gold-grafana-dashboard.png)
 
+The dashboard includes:
 | Panel | Signal |
 |-------|--------|
 | Latency (p50 / p95 / p99) | Latency |

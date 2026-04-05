@@ -1,0 +1,13 @@
+﻿NAME                                        SERVICE        STATE     STATUS                 PORTS
+pe-hackathon-template-2026-alertmanager-1   alertmanager   running   Up 2 hours             0.0.0.0:9093->9093/tcp, [::]:9093->9093/tcp
+pe-hackathon-template-2026-app-1            app            running   Up 8 minutes           0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp
+pe-hackathon-template-2026-auto-healer-1    auto-healer    running   Up 8 minutes           5001/tcp
+pe-hackathon-template-2026-blackbox-1       blackbox       running   Up 2 hours             9115/tcp
+pe-hackathon-template-2026-grafana-1        grafana        running   Up 2 hours             0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+pe-hackathon-template-2026-nginx-1          nginx          running   Up 2 hours             0.0.0.0:80->80/tcp, [::]:80->80/tcp
+pe-hackathon-template-2026-postgres-1       postgres       running   Up 2 hours (healthy)   5432/tcp
+pe-hackathon-template-2026-prometheus-1     prometheus     running   Up 2 hours             0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+pe-hackathon-template-2026-redis-1          redis          running   Up 2 hours (healthy)   6379/tcp
+pe-hackathon-template-2026-web1-1           web1           running   Up 8 minutes           5000/tcp
+pe-hackathon-template-2026-web2-1           web2           running   Up 8 minutes           5000/tcp
+pe-hackathon-template-2026-web3-1           web3           running   Up 8 minutes           5000/tcp
