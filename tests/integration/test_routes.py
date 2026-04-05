@@ -1,5 +1,6 @@
 import io
 import json
+import logging
 
 import pytest
 from datetime import datetime, timezone
@@ -47,7 +48,9 @@ def setup_integration_db(monkeypatch):
 
 
 @pytest.fixture()
-def client():
+def client(monkeypatch):
+    # create_app() calls load_dotenv(); dotenv does not override existing env.
+    monkeypatch.setenv("INCIDENT_SIMULATION_ENABLED", "false")
     flask_app = app_module.create_app()
     flask_app.config.update(TESTING=True)
     return flask_app.test_client()
@@ -58,6 +61,95 @@ def test_health_endpoint_returns_ok(client):
 
     assert response.status_code == 200
     assert response.get_json() == {"status": "ok"}
+
+
+def test_metrics_endpoint_returns_cpu_and_memory_usage(client):
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert set(["cpu_percent", "memory_percent", "system_memory"]).issubset(data)
+    assert isinstance(data["cpu_percent"], (int, float))
+    assert isinstance(data["memory_percent"], (int, float))
+    assert set(["total_bytes", "used_bytes", "percent"]).issubset(data["system_memory"])
+    assert isinstance(data["system_memory"]["total_bytes"], (int, float))
+    assert isinstance(data["system_memory"]["used_bytes"], (int, float))
+    assert isinstance(data["system_memory"]["percent"], (int, float))
+
+
+def test_prometheus_metrics_exposes_counter_and_cpu_gauge(client):
+    client.get("/health")
+    response = client.get("/prometheus/metrics")
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert "http_requests_total" in body
+    assert "app_process_cpu_percent" in body
+    assert "http_request_duration_seconds" in body
+    assert "app_process_memory_percent" in body
+    assert "app_process_memory_rss_bytes" in body
+
+
+def test_simulation_routes_disabled_by_default(client):
+    assert client.get("/simulation/http-500").status_code == 404
+
+
+def test_simulation_routes_when_enabled(monkeypatch):
+    monkeypatch.setenv("INCIDENT_SIMULATION_ENABLED", "true")
+    flask_app = app_module.create_app()
+    flask_app.config.update(TESTING=True)
+    tc = flask_app.test_client()
+    assert tc.get("/simulation/http-500").status_code == 500
+    assert tc.post("/simulation/cpu-burn/start").status_code == 200
+    assert tc.post("/simulation/cpu-burn/stop").status_code == 200
+
+
+def test_request_log_level_info_for_success(client, caplog):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+    try:
+        response = client.get("/health")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 200
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/health"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.INFO
+
+
+def test_request_log_level_warning_for_client_error(client, caplog):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+    try:
+        response = client.get("/urls/999")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 404
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/urls/999"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.WARNING
+
+
+def test_request_log_level_error_for_server_error(client, caplog, monkeypatch):
+    logger = client.application.logger
+    logger.addHandler(caplog.handler)
+
+    def _boom():
+        raise RuntimeError("forced test error")
+
+    monkeypatch.setattr(app_module, "health_payload", _boom)
+
+    try:
+        response = client.get("/health")
+    finally:
+        logger.removeHandler(caplog.handler)
+
+    assert response.status_code == 500
+    request_logs = [r for r in caplog.records if r.getMessage() == "request completed" and r.path == "/health"]
+    assert request_logs
+    assert request_logs[-1].levelno == logging.ERROR
 
 
 def test_list_urls_returns_json(client):
