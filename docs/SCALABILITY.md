@@ -8,7 +8,7 @@ Bronze → Silver → Gold. This file tracks what each tier needs and how to run
 
 **Goal:** Stress test the app, **50 concurrent users**, record **p95 latency** and **error rate**.
 
-The k6 script simulates **real shortener traffic**: mostly **`GET /s/<code>`** (link clicks), with smaller shares of **`/users/:id`**, **`/urls/:id`**, and **`/health`** (short codes aligned with `app/data/urls.csv` in the script).
+The k6 script simulates **real shortener traffic**: mostly **`GET /s/<code>`** (link clicks), with smaller shares of **`/users/:id`**, **`/urls/:id`**, and **`/health`** (short codes aligned with `../app/data/urls.csv` in the script).
 
 **Install k6** (not a Python package):
 
@@ -24,10 +24,10 @@ The k6 script simulates **real shortener traffic**: mostly **`GET /s/<code>`** (
 **Run**
 
 ```bash
-k6 run scripts/k6/bronze-baseline.js
+k6 run ../scripts/k6/bronze-baseline.js
 ```
 
-Optional: `BASE_URL=http://127.0.0.1:5000 k6 run scripts/k6/bronze-baseline.js`
+Optional: `BASE_URL=http://127.0.0.1:5000 k6 run ../scripts/k6/bronze-baseline.js`
 
 **What to save for judging**
 
@@ -35,7 +35,7 @@ Optional: `BASE_URL=http://127.0.0.1:5000 k6 run scripts/k6/bronze-baseline.js`
 - **p95** from `http_req_duration` (line `p(95)=...`).
 - **Error rate** from `http_req_failed`.
 
-Fill the table in [docs/BRONZE_BASELINE.md](docs/BRONZE_BASELINE.md) if you want a single place for numbers.
+Fill a small notes table in this section if you want a single place for numbers.
 
 ---
 
@@ -84,16 +84,16 @@ curl http://127.0.0.1/health
 ### Load test (200 VUs)
 
 ```bash
-k6 run scripts/k6/silver-horde.js
+k6 run ../scripts/k6/silver-horde.js
 ```
 
 Traffic goes to **Nginx** by default (`BASE_URL` is `http://127.0.0.1`, port 80). Override if you changed the published port:
 
 ```bash
-BASE_URL=http://127.0.0.1:8080 k6 run scripts/k6/silver-horde.js
+BASE_URL=http://127.0.0.1:8080 k6 run ../scripts/k6/silver-horde.js
 ```
 
-The script asserts **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%**. Traffic mix matches Bronze (mostly **`/s/...`** — same shape as [`scripts/k6/bronze-baseline.js`](scripts/k6/bronze-baseline.js)).
+The script asserts **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%**. Traffic mix matches Bronze (mostly **`/s/...`** — same shape as [`scripts/k6/bronze-baseline.js`](../scripts/k6/bronze-baseline.js)).
 
 ### Proof for judging
 
@@ -116,9 +116,9 @@ docker compose down -v
 
 ## Gold (cache + heavy load)
 
-**Goal:** **500+ concurrent users**, **p95 &lt; 3 s**, **&lt; 5%** errors, with **Redis** caching hot short-code reads (see [`app/cache.py`](app/cache.py), [`app/routes/urls.py`](app/routes/urls.py)).
+**Goal:** **500+ concurrent users**, **p95 &lt; 3 s**, **&lt; 5%** errors, with **Redis** caching hot short-code reads (see [`app/cache.py`](../app/cache.py), [`app/routes/urls.py`](../app/routes/urls.py)).
 
-**Stack:** Same horizontal layout as Silver (**Postgres**, **three** Gunicorn app containers, **Nginx** on port **80**), plus a **Redis** service. Compose sets **`REDIS_URL=redis://redis:6379/0`** on each app replica (see [`docker-compose.yml`](docker-compose.yml)).
+**Stack:** Same horizontal layout as Silver (**Postgres**, **three** Gunicorn app containers, **Nginx** on port **80**), plus a **Redis** service. Compose sets **`REDIS_URL=redis://redis:6379/0`** on each app replica (see [`docker-compose.yml`](../docker-compose.yml)).
 
 ### Install
 
@@ -156,13 +156,13 @@ curl -s -o /dev/null -D - http://127.0.0.1/s/BqJLDM | grep -i x-cache
 ### Load test (500 VUs)
 
 ```bash
-k6 run scripts/k6/gold-tsunami.js
+k6 run ../scripts/k6/gold-tsunami.js
 ```
 
 Export a summary JSON (optional):
 
 ```bash
-k6 run --summary-export=scripts/k6/summary-gold.json scripts/k6/gold-tsunami.js
+k6 run --summary-export=../scripts/k6/summary-gold.json ../scripts/k6/gold-tsunami.js
 ```
 
 The script uses **500 VUs** for **2m**, with thresholds **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%** (same traffic shape as Bronze/Silver: mostly **`/s/...`**).
@@ -185,6 +185,6 @@ docker compose down -v
 
 | Tier   | Artifact |
 |--------|----------|
-| Bronze | [`scripts/k6/bronze-baseline.js`](scripts/k6/bronze-baseline.js), `docs/BRONZE_BASELINE.md` |
-| Silver | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml), [`nginx/nginx.conf`](nginx/nginx.conf), [`scripts/k6/silver-horde.js`](scripts/k6/silver-horde.js) |
-| Gold   | [`app/cache.py`](app/cache.py), Redis in [`docker-compose.yml`](docker-compose.yml), [`scripts/k6/gold-tsunami.js`](scripts/k6/gold-tsunami.js) |
+| Bronze | [`scripts/k6/bronze-baseline.js`](../scripts/k6/bronze-baseline.js) |
+| Silver | [`Dockerfile`](../Dockerfile), [`docker-compose.yml`](../docker-compose.yml), [`nginx/nginx.conf`](../nginx/nginx.conf), [`scripts/k6/silver-horde.js`](../scripts/k6/silver-horde.js) |
+| Gold   | [`app/cache.py`](../app/cache.py), Redis in [`docker-compose.yml`](../docker-compose.yml), [`scripts/k6/gold-tsunami.js`](../scripts/k6/gold-tsunami.js) |

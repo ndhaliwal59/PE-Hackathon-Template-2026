@@ -61,12 +61,12 @@ If both commands return JSON successfully, the app is running and the incident r
 
 ## Silver (Prometheus, Alertmanager, Discord)
 
-Silver adds **Prometheus** (rules + scraping), **Blackbox** (synthetic health through nginx), and **Alertmanager** (notifications to **Discord** via webhook). Alert rule definitions live in [`monitoring/rules/incident.yml`](monitoring/rules/incident.yml). [`monitoring/alertmanager-entrypoint.sh`](monitoring/alertmanager-entrypoint.sh) merges [`monitoring/alertmanager.yml.tpl`](monitoring/alertmanager.yml.tpl) with `DISCORD_WEBHOOK_URL` at container start.
+Silver adds **Prometheus** (rules + scraping), **Blackbox** (synthetic health through nginx), and **Alertmanager** (notifications to **Discord** via webhook). Alert rule definitions live in [`monitoring/rules/incident.yml`](../monitoring/rules/incident.yml). [`monitoring/alertmanager-entrypoint.sh`](../monitoring/alertmanager-entrypoint.sh) merges [`monitoring/alertmanager.yml.tpl`](../monitoring/alertmanager.yml.tpl) with `DISCORD_WEBHOOK_URL` at container start.
 
 ### Configure Discord
 
 1. Create a Discord incoming webhook for your channel.
-2. Set `DISCORD_WEBHOOK_URL` in `.env` (see [`.env.example`](.env.example)). If unset, Compose uses a placeholder URL so stacks still start; Discord will reject notifications until you set a real webhook.
+2. Set `DISCORD_WEBHOOK_URL` in `.env` (see [`.env.example`](../.env.example)). If unset, Compose uses a placeholder URL so stacks still start; Discord will reject notifications until you set a real webhook.
 
 ### Start the stack
 
@@ -87,20 +87,20 @@ docker compose exec web1 curl -sS http://127.0.0.1:5000/prometheus/metrics | hea
 
 ### Fire drills (demo alerts)
 
-Helper scripts (set `INCIDENT_SIMULATION_ENABLED=true` in `.env` and restart Compose before the error-rate and CPU drills) live under [`scripts/incident/`](scripts/incident/); see [`scripts/incident/README.md`](scripts/incident/README.md).
+Helper scripts (set `INCIDENT_SIMULATION_ENABLED=true` in `.env` and restart Compose before the error-rate and CPU drills) live under [`scripts/incident/`](../scripts/incident/); see [`scripts/incident/README.md`](../scripts/incident/README.md).
 
-- **Service down**: [`scripts/incident/simulate_service_down.sh`](scripts/incident/simulate_service_down.sh) stops nginx; restore with [`scripts/incident/restore_nginx.sh`](scripts/incident/restore_nginx.sh). The blackbox probe to `http://nginx/health` fails for **2+ minutes** (`ServiceDown`).
-- **High error rate**: [`scripts/incident/simulate_high_error_rate.sh`](scripts/incident/simulate_high_error_rate.sh) loops `GET /simulation/http-500` so **5xx** share exceeds the rule threshold (`HighErrorRate`).
-- **High CPU**: [`scripts/incident/simulate_high_cpu.sh`](scripts/incident/simulate_high_cpu.sh) starts background CPU burn in workers via `POST /simulation/cpu-burn/start` (`HighCPU`).
+- **Service down**: [`scripts/incident/simulate_service_down.sh`](../scripts/incident/simulate_service_down.sh) stops nginx; restore with [`scripts/incident/restore_nginx.sh`](../scripts/incident/restore_nginx.sh). The blackbox probe to `http://nginx/health` fails for **2+ minutes** (`ServiceDown`).
+- **High error rate**: [`scripts/incident/simulate_high_error_rate.sh`](../scripts/incident/simulate_high_error_rate.sh) loops `GET /simulation/http-500` so **5xx** share exceeds the rule threshold (`HighErrorRate`).
+- **High CPU**: [`scripts/incident/simulate_high_cpu.sh`](../scripts/incident/simulate_high_cpu.sh) starts background CPU burn in workers via `POST /simulation/cpu-burn/start` (`HighCPU`).
 
 Alerts use `for: 2m` and 15s scrape/evaluation intervals so firing stays **within the 5-minute** quest window after the condition is true.
 
 ### Show the configuration (loot)
 
-- Rules: [`monitoring/rules/incident.yml`](monitoring/rules/incident.yml)
-- Prometheus scrape config: [`monitoring/prometheus.yml`](monitoring/prometheus.yml)
-- Blackbox modules: [`monitoring/blackbox.yml`](monitoring/blackbox.yml)
-- Alertmanager template (Discord webhook placeholder): [`monitoring/alertmanager.yml.tpl`](monitoring/alertmanager.yml.tpl)
+- Rules: [`monitoring/rules/incident.yml`](../monitoring/rules/incident.yml)
+- Prometheus scrape config: [`monitoring/prometheus.yml`](../monitoring/prometheus.yml)
+- Blackbox modules: [`monitoring/blackbox.yml`](../monitoring/blackbox.yml)
+- Alertmanager template (Discord webhook placeholder): [`monitoring/alertmanager.yml.tpl`](../monitoring/alertmanager.yml.tpl)
 
 ## Gold (Grafana Dashboard, Runbook, Sherlock Mode)
 
@@ -139,6 +139,6 @@ See the "Sherlock Mode" section of [`RUNBOOK.md`](RUNBOOK.md) for a scripted wal
 
 ### Configuration (loot)
 
-- Grafana provisioning: [`monitoring/grafana/provisioning/`](monitoring/grafana/provisioning/)
-- Dashboard JSON: [`monitoring/grafana/dashboards/incident-command-center.json`](monitoring/grafana/dashboards/incident-command-center.json)
+- Grafana provisioning: [`monitoring/grafana/provisioning/`](../monitoring/grafana/provisioning/)
+- Dashboard JSON: [`monitoring/grafana/dashboards/incident-command-center.json`](../monitoring/grafana/dashboards/incident-command-center.json)
 - Runbook: [`RUNBOOK.md`](RUNBOOK.md)

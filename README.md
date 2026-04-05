@@ -1,7 +1,7 @@
 # PE Hackathon Template
 
 Starter app for the MLH PE Hackathon.
-Includes Flask, PostgreSQL, Peewee models, Redis-backed caching, JSON logging, metrics, and seed loading.
+Includes Flask, PostgreSQL, Redis-backed caching, Nginx load balancing, Prometheus/Grafana observability, JSON logging, metrics, and seed loading.
 
 ## Getting Started
 
@@ -12,38 +12,49 @@ Two setup options are available:
 
 ## Documentation
 
-- [API.md](API.md)
-- [RELIABILITY.md](RELIABILITY.md)
-- [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
-- [RUNBOOK.md](RUNBOOK.md)
-- [SCALABILITY.md](SCALABILITY.md)
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- [API.md](docs/API.md)
+- [RELIABILITY.md](docs/RELIABILITY.md)
+- [INCIDENT_RESPONSE.md](docs/INCIDENT_RESPONSE.md)
+- [RUNBOOK.md](docs/RUNBOOK.md)
+- [SCALABILITY.md](docs/SCALABILITY.md)
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ## Architecture
 
+The Docker Compose stack provides two request paths:
+- **Direct (single instance):** Client → `app` service on port 5000 (for quick testing)
+- **Load-balanced (HA):** Client → Nginx on port 80 → web1/web2/web3 (for scalability testing)
+
 ```mermaid
 flowchart LR
-  Client[Browser or curl] --> Nginx[Nginx load balancer]
-  Nginx --> Web1[web1 Flask/Gunicorn]
+  Client[Browser or curl]
+  
+  Client -->|port 5000| App[app Flask/Gunicorn]
+  Client -->|port 80| Nginx[Nginx load balancer]
+  
+  Nginx -->|least_conn| Web1[web1 Flask/Gunicorn]
   Nginx --> Web2[web2 Flask/Gunicorn]
   Nginx --> Web3[web3 Flask/Gunicorn]
 
-  Web1 --> DB[(PostgreSQL)]
+  App --> DB[(PostgreSQL)]
+  Web1 --> DB
   Web2 --> DB
   Web3 --> DB
 
-  Web1 --> Redis[(Redis cache)]
+  App --> Redis[(Redis cache)]
+  Web1 --> Redis
   Web2 --> Redis
   Web3 --> Redis
 
-  Prometheus[Prometheus] --> Web1
+  Prometheus[Prometheus] --> App
+  Prometheus --> Web1
   Prometheus --> Web2
   Prometheus --> Web3
   Prometheus --> Blackbox[Blackbox exporter]
   Blackbox --> Nginx
 
   Prometheus --> Alertmanager[Alertmanager]
-  Prometheus --> Grafana[Grafana]
+  Grafana[Grafana] --> Prometheus
 ```
 
 ## Project Structure
@@ -58,12 +69,14 @@ nginx/
 scripts/
   incident/
   k6/
-API.md
 README.md
-RELIABILITY.md
-INCIDENT_RESPONSE.md
-RUNBOOK.md
-SCALABILITY.md
+docs/
+  API.md
+  RELIABILITY.md
+  INCIDENT_RESPONSE.md
+  RUNBOOK.md
+  SCALABILITY.md
+  TROUBLESHOOTING.md
 Dockerfile
 docker-compose.yml
 run.py
@@ -72,7 +85,7 @@ load_seed.py
 
 ## Docker Compose (recommended)
 
-This option starts the full stack: PostgreSQL, Redis, three app replicas, Nginx, Prometheus, Alertmanager, and Grafana.
+This option starts the full stack: a single `app` service + three `web` instances behind Nginx load balancer, plus PostgreSQL, Redis, Prometheus, Alertmanager, and Grafana.
 
 ### What you need
 
@@ -102,11 +115,29 @@ Run:
 docker compose up -d --build
 ```
 
-Check:
+Check running services:
+
+```bash
+docker compose ps
+```
+
+Check app health (direct path):
 
 ```bash
 curl http://localhost:5000/health
 ```
+
+Check app health through load balancer (Nginx):
+
+```bash
+curl http://localhost/health
+```
+
+Access observability tools:
+
+- Prometheus: [http://localhost:9090](http://localhost:9090)
+- Grafana: [http://localhost:3000](http://localhost:3000) (admin/admin)
+- Alertmanager: [http://localhost:9093](http://localhost:9093)
 
 ---
 

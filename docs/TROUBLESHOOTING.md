@@ -13,10 +13,10 @@ alertmanager-1  | time=...Z level=ERROR source=coordinator.go:117 msg="Loading c
 ```
 
 **Root cause:**
-The file `monitoring/alertmanager-entrypoint.sh` (and possibly other `.sh` files in `scripts/incident/`) have Windows line endings (CRLF instead of LF). Inside the Linux container, the shell interprets the `\r` as part of the line, breaking the script.
+The file `../monitoring/alertmanager-entrypoint.sh` (and possibly other `.sh` files in `../scripts/incident/`) have Windows line endings (CRLF instead of LF). Inside the Linux container, the shell interprets the `\r` as part of the line, breaking the script.
 
 **How to fix:**
-1. Open `monitoring/alertmanager-entrypoint.sh` in VS Code or your editor.
+1. Open `../monitoring/alertmanager-entrypoint.sh` in VS Code or your editor.
 2. Look at the bottom-right status bar. If it says `CRLF`, click it.
 3. Choose `LF` from the menu and save the file.
 4. Repeat for any `.sh` files in `scripts/incident/` if the error persists.
@@ -25,7 +25,7 @@ You can also use the terminal:
 
 ```bash
 # On macOS/Linux with dos2unix installed:
-dos2unix monitoring/alertmanager-entrypoint.sh scripts/incident/*.sh
+dos2unix ../monitoring/alertmanager-entrypoint.sh ../scripts/incident/*.sh
 
 # On Windows with git bash:
 git config core.safecrlf false  # Disable git's auto-conversion temporarily

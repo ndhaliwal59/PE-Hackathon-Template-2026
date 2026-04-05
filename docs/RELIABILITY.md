@@ -26,8 +26,8 @@ Verify `/health`:
 curl http://localhost:5000/health
 ```
 
-CI runs only the unit suite from [tests/unit](tests/unit) using [`.github/workflows/bronze.yml`](.github/workflows/bronze.yml).
-Integration tests live in [tests/integration](tests/integration) and are excluded from the Bronze workflow.
+CI runs only the unit suite from [tests/unit](../tests/unit) using [`.github/workflows/bronze.yml`](../.github/workflows/bronze.yml).
+Integration tests live in [tests/integration](../tests/integration) and are excluded from the Bronze workflow.
 
 ## Silver Reliability
 
@@ -49,7 +49,7 @@ Enforce the Silver coverage target locally (>= 50%):
 uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing --cov-fail-under=50
 ```
 
-Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](tests/integration) and are included in the [Silver workflow](.github/workflows/silver.yml). A simulated deployment job is also configured, which will be blocked and skipped if any tests fail or code coverage drops below the limit.
+Silver requires at least 50% coverage on application code. Integration tests live in [tests/integration](../tests/integration) and are included in the [Silver workflow](../.github/workflows/silver.yml). A simulated deployment job is also configured, which will be blocked and skipped if any tests fail or code coverage drops below the limit.
 
 ## Gold Reliability
 
@@ -66,7 +66,7 @@ uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing -
 ```
 
 Gold also expects graceful failure responses and restart verification. Use the Error Handling and Chaos Mode sections below.
-Gold CI coverage enforcement is configured in [`.github/workflows/gold.yml`](.github/workflows/gold.yml).
+Gold CI coverage enforcement is configured in [`.github/workflows/gold.yml`](../.github/workflows/gold.yml).
 
 ## Error Handling
 
