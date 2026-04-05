@@ -1,7 +1,7 @@
 # PE Hackathon Template
 
 Starter app for the MLH PE Hackathon.
-Includes Flask, PostgreSQL, Peewee models, JSON logging, metrics, and seed loading.
+Includes Flask, PostgreSQL, Peewee models, Redis-backed caching, JSON logging, metrics, and seed loading.
 
 ## Getting Started
 
@@ -22,10 +22,27 @@ Two setup options are available:
 
 ```mermaid
 flowchart LR
-    Client[Browser or curl] --> App[Flask app]
-    App --> DB[(PostgreSQL)]
-    App --> Logs[JSON logs]
-    App --> Metrics["/metrics"]
+  Client[Browser or curl] --> Nginx[Nginx load balancer]
+  Nginx --> Web1[web1 Flask/Gunicorn]
+  Nginx --> Web2[web2 Flask/Gunicorn]
+  Nginx --> Web3[web3 Flask/Gunicorn]
+
+  Web1 --> DB[(PostgreSQL)]
+  Web2 --> DB
+  Web3 --> DB
+
+  Web1 --> Redis[(Redis cache)]
+  Web2 --> Redis
+  Web3 --> Redis
+
+  Prometheus[Prometheus] --> Web1
+  Prometheus --> Web2
+  Prometheus --> Web3
+  Prometheus --> Blackbox[Blackbox exporter]
+  Blackbox --> Nginx
+
+  Prometheus --> Alertmanager[Alertmanager]
+  Prometheus --> Grafana[Grafana]
 ```
 
 ## Project Structure
