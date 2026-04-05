@@ -85,6 +85,9 @@ def test_prometheus_metrics_exposes_counter_and_cpu_gauge(client):
     body = response.get_data(as_text=True)
     assert "http_requests_total" in body
     assert "app_process_cpu_percent" in body
+    assert "http_request_duration_seconds" in body
+    assert "app_process_memory_percent" in body
+    assert "app_process_memory_rss_bytes" in body
 
 
 def test_simulation_routes_disabled_by_default(client):

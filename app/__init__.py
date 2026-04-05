@@ -4,7 +4,7 @@ from time import perf_counter
 import psutil
 from dotenv import load_dotenv
 from flask import Flask, Response, g, jsonify, request
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from pythonjsonlogger.json import JsonFormatter
 
 from app.database import db, init_db
@@ -15,9 +15,22 @@ http_requests_total = Counter(
     "Total HTTP requests",
     ["method", "status_group"],
 )
+http_request_duration_seconds = Histogram(
+    "http_request_duration_seconds",
+    "Request latency in seconds",
+    ["method"],
+)
 app_process_cpu_percent = Gauge(
     "app_process_cpu_percent",
     "Process CPU percent (psutil.Process, same semantics as JSON /metrics)",
+)
+app_process_memory_percent = Gauge(
+    "app_process_memory_percent",
+    "Process RSS memory as percentage of total system memory (psutil.Process)",
+)
+app_process_memory_rss_bytes = Gauge(
+    "app_process_memory_rss_bytes",
+    "Process RSS in bytes (psutil.Process)",
 )
 
 
@@ -89,12 +102,19 @@ def create_app():
             http_requests_total.labels(
                 method=request.method, status_group=status_group
             ).inc()
+            if started_at is not None:
+                http_request_duration_seconds.labels(
+                    method=request.method
+                ).observe(perf_counter() - started_at)
         return response
 
     @app.get("/prometheus/metrics")
     def prometheus_metrics():
-        # interval=0.1 blocks briefly so the sample reflects recent CPU (0.0 often reads 0 at scrape time).
-        app_process_cpu_percent.set(psutil.Process().cpu_percent(interval=0.1))
+        proc = psutil.Process()
+        app_process_cpu_percent.set(proc.cpu_percent(interval=0.1))
+        mem = proc.memory_info()
+        app_process_memory_rss_bytes.set(mem.rss)
+        app_process_memory_percent.set(proc.memory_percent())
         return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
     @app.route("/health")

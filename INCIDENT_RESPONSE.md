@@ -1,4 +1,4 @@
-# Incident Response (Bronze + Silver)
+# Incident Response (Bronze + Silver + Gold)
 
 This document covers the Bronze and Silver incident response quests for this repo.
 
@@ -99,3 +99,44 @@ Alerts use `for: 2m` and 15s scrape/evaluation intervals so firing stays **withi
 - Prometheus scrape config: [`monitoring/prometheus.yml`](monitoring/prometheus.yml)
 - Blackbox modules: [`monitoring/blackbox.yml`](monitoring/blackbox.yml)
 - Alertmanager template (Discord webhook placeholder): [`monitoring/alertmanager.yml.tpl`](monitoring/alertmanager.yml.tpl)
+
+## Gold (Grafana Dashboard, Runbook, Sherlock Mode)
+
+Gold adds a **Grafana** dashboard covering all four golden signals (Latency, Traffic, Errors, Saturation) plus availability and alert-visibility panels, a written **Runbook** for 3 AM incidents, and a **Sherlock Mode** walkthrough demonstrating root-cause diagnosis from the dashboard.
+
+### Grafana
+
+Grafana starts automatically with `docker compose up -d --build` and is pre-provisioned with the Prometheus datasource and the **Incident Command Center** dashboard.
+
+- Grafana UI: [http://localhost:3000](http://localhost:3000)
+- Dashboard direct link: [http://localhost:3000/d/incident-command-center](http://localhost:3000/d/incident-command-center)
+- Login: `admin` / `admin` (anonymous viewer access is also enabled)
+
+The dashboard includes:
+
+| Panel | Signal |
+|-------|--------|
+| Latency (p50 / p95 / p99) | Latency |
+| Traffic (req/s by method) | Traffic |
+| Errors (req/s) | Errors |
+| Error Ratio (5xx / total) | Errors |
+| Saturation (CPU & Memory %) | Saturation |
+| Process RSS Memory (bytes) | Saturation |
+| Blackbox Probe (stat) | Availability |
+| Replica Status (stat) | Availability |
+| Synthetic Latency (blackbox through nginx) | Latency |
+| Firing Alerts | Alert visibility |
+
+### Runbook
+
+The full on-call runbook lives at [`RUNBOOK.md`](RUNBOOK.md). It maps each alert to dashboard signals, step-by-step triage, and resolution criteria. It also includes an escalation section and a Sherlock Mode walkthrough.
+
+### Sherlock Mode
+
+See the "Sherlock Mode" section of [`RUNBOOK.md`](RUNBOOK.md) for a scripted walkthrough: trigger a simulated high-error-rate incident, observe the dashboard panels change, then pinpoint the root cause from structured log fields.
+
+### Configuration (loot)
+
+- Grafana provisioning: [`monitoring/grafana/provisioning/`](monitoring/grafana/provisioning/)
+- Dashboard JSON: [`monitoring/grafana/dashboards/incident-command-center.json`](monitoring/grafana/dashboards/incident-command-center.json)
+- Runbook: [`RUNBOOK.md`](RUNBOOK.md)
