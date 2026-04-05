@@ -3,6 +3,10 @@
 Starter app for the MLH PE Hackathon.
 Includes Flask, PostgreSQL, Redis-backed caching, Nginx load balancing, Prometheus/Grafana observability, JSON logging, metrics, and seed loading.
 
+## Hackathon Context
+
+This repository was built for the MLH PE Hackathon and is organized to make the project easy to run, use, and review. In addition to the application itself, it includes supporting documentation for areas such as reliability, scalability, incident response, and troubleshooting so reviewers can quickly understand the work across multiple parts of the project.
+
 ## Getting Started
 
 Two setup options are available:
@@ -304,8 +308,106 @@ Open the URL Shortener web UI: [http://localhost:5000/ui](http://localhost:5000/
 
 ## Seed Data
 
-After app and database are ready:
+After the app and database are ready, load sample data so you can test the app immediately:
 
 ```bash
 uv run load_seed.py
 ```
+
+## Quick Usage
+
+This section shows a minimal terminal workflow for using the app after setup is complete and the app is already running.
+
+### Windows PowerShell
+
+```powershell
+# Use the direct app path:
+$BASE_URL = "http://localhost:5000"
+
+# Or use the Nginx load-balanced path:
+# $BASE_URL = "http://localhost"
+```
+
+1. Health check
+
+```powershell
+curl.exe "$BASE_URL/health"
+```
+
+2. Create a user
+
+```powershell
+@'
+{"username":"user","email":"user@example.com"}
+'@ | curl.exe -X POST "$BASE_URL/users" -H "Content-Type: application/json" --data-binary "@-"
+```
+
+3. Create a short URL
+   Replace `1` with the `id` returned from step 2.
+
+```powershell
+@'
+{"user_id":1,"original_url":"https://example.com","title":"Example"}
+'@ | curl.exe -X POST "$BASE_URL/urls" -H "Content-Type: application/json" --data-binary "@-"
+```
+
+4. List URLs
+
+```powershell
+curl.exe "$BASE_URL/urls"
+```
+
+5. Test the short link
+   Replace `REPLACE_SHORT_CODE` with the `short_code` returned in step 3.
+
+```powershell
+curl.exe -i "$BASE_URL/s/REPLACE_SHORT_CODE"
+```
+
+### macOS / Linux
+
+```bash
+# Use the direct app path:
+BASE_URL=http://localhost:5000
+
+# Or use the Nginx load-balanced path:
+# BASE_URL=http://localhost
+```
+
+1. Health check
+
+```bash
+curl "$BASE_URL/health"
+```
+
+2. Create a user
+
+```bash
+curl -X POST "$BASE_URL/users" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user","email":"user@example.com"}'
+```
+
+3. Create a short URL
+   Replace `1` with the `id` returned from step 2.
+
+```bash
+curl -X POST "$BASE_URL/urls" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":1,"original_url":"https://example.com","title":"Example"}'
+```
+
+4. List URLs
+
+```bash
+curl "$BASE_URL/urls"
+```
+
+5. Test the short link
+   Replace `REPLACE_SHORT_CODE` with the `short_code` returned in step 3.
+
+```bash
+curl -i "$BASE_URL/s/REPLACE_SHORT_CODE"
+```
+
+For the full endpoint reference, see [API.md](docs/API.md).

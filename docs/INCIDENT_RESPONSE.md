@@ -1,6 +1,6 @@
 # Incident Response (Bronze + Silver + Gold)
 
-This document covers the Bronze and Silver incident response quests for this repo.
+This document covers the Bronze, Silver, and Gold incident response quests for this repo.
 
 **Troubleshooting:** If you encounter startup or runtime issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common problems and solutions.
 
