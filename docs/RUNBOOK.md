@@ -13,6 +13,8 @@
 | Prometheus | [http://localhost:9090](http://localhost:9090) |
 | Alertmanager | [http://localhost:9093](http://localhost:9093) |
 
+For the replicated web crash recovery demo, see [RELIABILITY.md](RELIABILITY.md#ha-recovery-demo).
+
 ---
 
 ## General triage (first 2 minutes)

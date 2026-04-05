@@ -23,6 +23,15 @@ These scripts trigger the three Prometheus alerts. Use only on a **local / demo*
 | `simulate_high_error_rate.sh` | `HighErrorRate` | Loops `GET /simulation/http-500` for `DURATION_SEC` (default 200s) |
 | `simulate_high_cpu.sh` | `HighCPU` | POSTs `cpu-burn/start`, sleeps `DURATION_SEC`, then `cpu-burn/stop` |
 
+## HA recovery demo
+
+This is separate from the Silver alert simulations. It crashes `web2`, keeps traffic flowing through Nginx, and waits for the replica to restart.
+The script starts the required Compose services if they are not already running.
+
+```bash
+./simulate_web_replica_crash.sh
+```
+
 Rules use `for: 2m`; keep `DURATION_SEC` at **200** or higher so the alert can fire within the quest window.
 
 ## Run

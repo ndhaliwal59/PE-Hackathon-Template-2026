@@ -164,3 +164,51 @@ curl http://localhost:5000/health
 ```
 
 This should return 200 OK with the JSON health response.
+
+## HA Recovery Demo (Replica Crash)
+
+This demo extends the single-container Chaos Mode above. Chaos Mode kills the lone `app` container and proves automatic restart. This section is about the replicated HA path: one web replica fails, Nginx keeps serving through the remaining replicas, and `web2` comes back through the normal restart policy.
+
+The Nginx path should remain available during the replica restart, although a brief transient failure may still occur depending on timing.
+
+### Verification steps
+
+1. Start the stack so the app, `web1`, `web2`, and `web3` are running:
+
+```powershell
+docker compose up -d --build
+```
+
+The demo script can also start the required Compose services if they are not already running.
+
+2. Confirm the Nginx path is healthy before the failure test:
+
+```powershell
+curl http://localhost/health
+```
+
+3. Run the HA recovery demo:
+
+```bash
+# from the repository root
+./scripts/incident/simulate_web_replica_crash.sh
+```
+
+4. Watch `docker compose ps web2` and `docker inspect` to confirm the restart count increments.
+
+5. Confirm the public path still works through Nginx during and after recovery:
+
+```powershell
+curl http://localhost/health
+```
+
+6. Optionally confirm the recovered replica responds again:
+
+```powershell
+docker compose exec web2 python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).read().decode())"
+```
+
+### Why this is different
+
+- Chaos Mode proves the single `app` container restarts.
+- HA Recovery proves one replica can die while Nginx keeps serving and the replica comes back automatically.
