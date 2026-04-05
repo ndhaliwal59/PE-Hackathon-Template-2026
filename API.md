@@ -8,6 +8,17 @@ This repo includes a small JSON API for users, URLs, and events. Most routes ret
 | --- | --- | --- | --- |
 | `GET` | `/health` | Checks that the app is running. | `200` with `{"status":"ok"}` |
 | `GET` | `/metrics` | Returns simple process and system memory data. | `200` with `cpu_percent`, `memory_percent`, and `system_memory` |
+| `GET` | `/prometheus/metrics` | Returns Prometheus text metrics and app process gauges. | `200` with Prometheus exposition text |
+
+## Incident Simulation
+
+These routes are only registered when `INCIDENT_SIMULATION_ENABLED=true`.
+
+| Method | Path | What it does | Success response |
+| --- | --- | --- | --- |
+| `GET` | `/simulation/http-500` | Returns a simulated server error for incident drills. | `500` with `{"error":"simulated server error"}` |
+| `POST` | `/simulation/cpu-burn/start` | Starts a background CPU burn for alert simulation. | `200` with `{"status":"cpu burn started"}` |
+| `POST` | `/simulation/cpu-burn/stop` | Stops the background CPU burn. | `200` with `{"status":"cpu burn stop requested"}` |
 
 ## Users
 

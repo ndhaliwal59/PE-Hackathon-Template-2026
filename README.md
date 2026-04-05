@@ -15,6 +15,7 @@ Two setup options are available:
 - [API.md](API.md)
 - [RELIABILITY.md](RELIABILITY.md)
 - [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
+- [RUNBOOK.md](RUNBOOK.md)
 - [SCALABILITY.md](SCALABILITY.md)
 
 ## Architecture
@@ -34,16 +35,26 @@ app/
   models/
   routes/
   data/
+monitoring/
+nginx/
+scripts/
+  incident/
+  k6/
 API.md
 README.md
 RELIABILITY.md
 INCIDENT_RESPONSE.md
+RUNBOOK.md
 SCALABILITY.md
+Dockerfile
+docker-compose.yml
 run.py
 load_seed.py
 ```
 
 ## Docker Compose (recommended)
+
+This option starts the full stack: PostgreSQL, Redis, three app replicas, Nginx, Prometheus, Alertmanager, and Grafana.
 
 ### What you need
 
@@ -90,68 +101,68 @@ curl http://localhost:5000/health
 
 1. Install uv
 
-Choose the command for your platform:
+   Choose the command for your platform:
 
-- Windows PowerShell
+   - Windows PowerShell
 
-  ```powershell
-  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  ```
+     ```powershell
+     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+     ```
 
-- macOS / Linux
+   - macOS / Linux
 
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
+     ```bash
+     curl -LsSf https://astral.sh/uv/install.sh | sh
+     ```
 
-Official uv installation docs: https://docs.astral.sh/uv/getting-started/installation/
+   Official uv installation docs: https://docs.astral.sh/uv/getting-started/installation/
 
 2. Clone the repo
 
-```bash
-git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
-cd PE-Hackathon-Template-2026
-```
+  ```bash
+  git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
+  cd PE-Hackathon-Template-2026
+  ```
 
 3. Install dependencies
 
-```bash
-uv sync
-```
+  ```bash
+  uv sync
+  ```
 
 4. Create the local `.env` file
 
-Choose the command for your platform:
+   Choose the command for your platform:
 
-- Windows PowerShell
+   - Windows PowerShell
 
-  ```powershell
-  Copy-Item .env.example .env
-  ```
+     ```powershell
+     Copy-Item .env.example .env
+     ```
 
-- macOS / Linux
+   - macOS / Linux
 
-  ```bash
-  cp .env.example .env
-  ```
+     ```bash
+     cp .env.example .env
+     ```
 
 5. Create the database
 
-```bash
-createdb hackathon_db
-```
+  ```bash
+  createdb hackathon_db
+  ```
 
 6. Run the app
 
-```bash
-uv run run.py
-```
+  ```bash
+  uv run run.py
+  ```
 
 7. Check the app
 
-```bash
-curl http://localhost:5000/health
-```
+  ```bash
+  curl http://localhost:5000/health
+  ```
 
 ## Seed Data
 
