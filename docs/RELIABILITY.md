@@ -14,6 +14,9 @@ Run the unit suite locally:
 uv run pytest tests/unit
 ```
 
+**Unit tests passing**  
+![Bronze unit tests](assets/evidence/reliability/bronze-unit-tests.png)
+
 Run the app:
 
 ```bash
@@ -37,11 +40,17 @@ Run integration tests locally:
 uv run pytest tests/integration
 ```
 
+**Integration tests passing**  
+![Silver integration tests](assets/evidence/reliability/silver-integration-tests.png)
+
 Run tests with coverage for app code only:
 
 ```bash
 uv run pytest tests/unit tests/integration --cov=app --cov-report=term-missing
 ```
+
+**Coverage report**  
+![Silver coverage report](assets/evidence/reliability/silver-coverage-report.png)
 
 Enforce the Silver coverage target locally (>= 50%):
 
