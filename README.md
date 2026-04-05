@@ -59,6 +59,8 @@ flowchart LR
   Grafana[Grafana] --> Prometheus
 ```
 
+If the diagram does not render on your device, you can view it here: [Architecture diagram](docs/assets/architecture-diagram.svg)
+
 ## Project Structure
 
 ```text
@@ -129,12 +131,16 @@ Check app health (direct path):
 
 ```bash
 curl http://localhost:5000/health
+# expected output:
+# {"status":"ok"}
 ```
 
 Check app health through load balancer (Nginx):
 
 ```bash
 curl http://localhost/health
+# expected output:
+# {"status":"ok"}
 ```
 
 Access observability tools:
@@ -215,6 +221,8 @@ Access observability tools:
 
   ```bash
   curl http://localhost:5000/health
+  # expected output:
+  # {"status":"ok"}
   ```
 
 ## Seed Data
