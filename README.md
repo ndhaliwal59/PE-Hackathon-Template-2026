@@ -70,6 +70,7 @@ app/
   models/
   routes/
   data/
+frontend/
 monitoring/
 nginx/
 scripts/
@@ -146,6 +147,11 @@ curl http://localhost/health
 # expected output:
 # {"status":"ok"}
 ```
+
+Open the URL Shortener web UI (no extra install required — served by Flask):
+
+- Direct: [http://localhost:5000/ui](http://localhost:5000/ui)
+- Through Nginx: [http://localhost/ui](http://localhost/ui)
 
 Access observability tools:
 
@@ -228,6 +234,8 @@ Access observability tools:
   # expected output:
   # {"status":"ok"}
   ```
+
+Open the URL Shortener web UI: [http://localhost:5000/ui](http://localhost:5000/ui)
 
 ## Seed Data
 

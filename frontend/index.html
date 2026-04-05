@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>URL Shortener</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+       background:#f5f7fa;color:#1a1a2e;display:flex;justify-content:center;
+       padding:3rem 1rem;min-height:100vh}
+  .card{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);
+        padding:2.5rem;width:100%;max-width:480px}
+  h1{font-size:1.5rem;margin-bottom:.25rem}
+  .subtitle{color:#6b7280;font-size:.9rem;margin-bottom:1.75rem}
+  label{display:block;font-weight:600;font-size:.85rem;margin-bottom:.3rem;margin-top:1rem}
+  input[type=text],input[type=number]{width:100%;padding:.55rem .75rem;border:1px solid #d1d5db;
+        border-radius:8px;font-size:.95rem;transition:border .15s}
+  input:focus{outline:none;border-color:#6366f1}
+  button{margin-top:1.5rem;width:100%;padding:.65rem;background:#6366f1;color:#fff;
+         border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;
+         transition:background .15s}
+  button:hover{background:#4f46e5}
+  button:disabled{opacity:.6;cursor:not-allowed}
+  .result{margin-top:1.5rem;padding:1rem;background:#f0fdf4;border:1px solid #bbf7d0;
+          border-radius:8px;word-break:break-all}
+  .result a{color:#6366f1;font-weight:600;text-decoration:none}
+  .result a:hover{text-decoration:underline}
+  .error{margin-top:1.5rem;padding:1rem;background:#fef2f2;border:1px solid #fecaca;
+         border-radius:8px;color:#b91c1c}
+  .hint{font-size:.8rem;color:#9ca3af;margin-top:.25rem}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>URL Shortener</h1>
+  <p class="subtitle">Paste a long URL and get a short link.</p>
+
+  <form id="shorten-form">
+    <label for="original_url">URL to shorten</label>
+    <input id="original_url" type="text" placeholder="https://example.com/very/long/path" required />
+
+    <label for="title">Title <span style="font-weight:400;color:#9ca3af">(optional)</span></label>
+    <input id="title" type="text" placeholder="My bookmark" />
+
+    <label for="user_id">User ID</label>
+    <input id="user_id" type="number" value="1" min="1" required />
+    <p class="hint">Uses seeded users. Run <code>uv run load_seed.py</code> first if you get "user not found".</p>
+
+    <button type="submit">Shorten</button>
+  </form>
+
+  <div id="output"></div>
+</div>
+
+<script>
+const form = document.getElementById("shorten-form");
+const output = document.getElementById("output");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  output.innerHTML = "";
+  const btn = form.querySelector("button");
+  btn.disabled = true;
+  btn.textContent = "Shortening\u2026";
+
+  try {
+    const res = await fetch("/urls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: Number(document.getElementById("user_id").value),
+        original_url: document.getElementById("original_url").value.trim(),
+        title: document.getElementById("title").value.trim() || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      output.innerHTML = `<div class="error">${data.error || "Something went wrong"}</div>`;
+      return;
+    }
+    const shortUrl = `${location.origin}/s/${data.short_code}`;
+    output.innerHTML =
+      `<div class="result">` +
+      `<strong>Short URL</strong><br>` +
+      `<a href="${shortUrl}" target="_blank" rel="noopener">${shortUrl}</a>` +
+      `</div>`;
+  } catch (err) {
+    output.innerHTML = `<div class="error">Network error: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Shorten";
+  }
+});
+</script>
+</body>
+</html>

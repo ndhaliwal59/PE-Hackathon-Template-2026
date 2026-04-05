@@ -51,6 +51,13 @@ These routes are only registered when `INCIDENT_SIMULATION_ENABLED=true`.
 | `GET` | `/events` | Lists event records. | Optional query: `url_id`, `user_id`, `event_type` | `200` JSON list | - |
 | `POST` | `/events` | Creates one event record. | JSON body: `url_id`, `user_id`, `event_type`, optional `details` | `201` with the new event | `400`, `404` |
 
+## Web UI
+
+A lightweight browser UI for shortening URLs is served at `/ui`. No separate install or dev server is needed — Flask serves the page directly.
+
+- Docker Compose: [http://localhost:5000/ui](http://localhost:5000/ui) (direct) or [http://localhost/ui](http://localhost/ui) (through Nginx)
+- Local setup: [http://localhost:5000/ui](http://localhost:5000/ui)
+
 ## Notes
 
 - All JSON endpoints return JSON error bodies on failure.
