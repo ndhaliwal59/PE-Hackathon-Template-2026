@@ -104,6 +104,11 @@ Helper scripts (set `INCIDENT_SIMULATION_ENABLED=true` in `.env` and restart Com
 
 Alerts use `for: 2m` and 15s scrape/evaluation intervals so firing stays **within the 5-minute** quest window after the condition is true.
 
+## Demo Evidence
+
+- **Live demo:** Shows a simulated CPU spike in the monitoring/dashboard view, a high-CPU alert firing after the threshold is exceeded, and a resolved alert after the load ends. This gives a short end-to-end view of detection, alerting, and recovery visibility.  
+  Video: https://www.youtube.com/watch?v=FWCv3iMr-m4&t=3s
+
 ### Show the configuration (loot)
 
 - Rules: [`monitoring/rules/incident.yml`](../monitoring/rules/incident.yml)
