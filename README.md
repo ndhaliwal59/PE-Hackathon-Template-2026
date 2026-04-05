@@ -6,6 +6,7 @@ Includes Flask, PostgreSQL, Peewee models, JSON logging, metrics, and seed loadi
 ## Getting Started
 
 Two setup options are available:
+
 - [Docker Compose - easiest option and fastest path](#docker-compose-recommended)
 - [Local setup - uv + PostgreSQL](#local-setup-uv--postgresql)
 
@@ -87,63 +88,66 @@ curl http://localhost:5000/health
 - uv
 - PostgreSQL running on `localhost:5432`
 
-Install uv:
+1. Install uv
 
-Windows PowerShell:
+Choose the command for your platform:
 
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
+- Windows PowerShell
 
-macOS / Linux:
+  ```powershell
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+- macOS / Linux
 
-Official uv installation docs:
-https://docs.astral.sh/uv/getting-started/installation/
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
 
-Clone the repo:
+Official uv installation docs: https://docs.astral.sh/uv/getting-started/installation/
+
+2. Clone the repo
 
 ```bash
 git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
 cd PE-Hackathon-Template-2026
 ```
 
-Install dependencies:
+3. Install dependencies
 
 ```bash
 uv sync
 ```
 
-Create local `.env` file:
+4. Create the local `.env` file
 
-Windows PowerShell:
+Choose the command for your platform:
 
-```powershell
-Copy-Item .env.example .env
-```
+- Windows PowerShell
 
-macOS / Linux:
+  ```powershell
+  Copy-Item .env.example .env
+  ```
 
-```bash
-cp .env.example .env
-```
+- macOS / Linux
 
-Create database:
+  ```bash
+  cp .env.example .env
+  ```
+
+5. Create the database
 
 ```bash
 createdb hackathon_db
 ```
 
-Run app:
+6. Run the app
 
 ```bash
 uv run run.py
 ```
 
-Check:
+7. Check the app
 
 ```bash
 curl http://localhost:5000/health
