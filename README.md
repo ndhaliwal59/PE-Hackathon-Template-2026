@@ -132,6 +132,8 @@ Run:
 docker compose up -d --build
 ```
 
+If this fails because Docker is not running, see [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 Check running services:
 
 ```bash
@@ -172,7 +174,8 @@ Access observability tools:
 ### What you need
 
 - uv
-- PostgreSQL running on `localhost:5432`
+- PostgreSQL server running on `localhost:5432`
+- PostgreSQL CLI tools available in your shell (`psql`; `createdb` is preferred but optional)
 
 1. Install uv
 
@@ -192,20 +195,68 @@ Access observability tools:
 
    Official uv installation docs: https://docs.astral.sh/uv/getting-started/installation/
 
-2. Clone the repo
+2. Install PostgreSQL (server + CLI tools)
+
+  Use the official PostgreSQL installer for your platform, then make sure `psql` and `pg_isready` are available in your terminal. `createdb` is optional convenience; if it is installed, you can use it for a shorter database creation command.
+
+   Download/install references:
+
+   - Windows: https://www.postgresql.org/download/windows/
+   - macOS: https://www.postgresql.org/download/macosx/
+   - Linux: https://www.postgresql.org/download/linux/
+
+   Optional package-manager commands if you already use them:
+
+   - macOS (Homebrew)
+
+     ```bash
+     brew install postgresql@16
+     ```
+
+   - Ubuntu/Debian
+
+     ```bash
+     sudo apt update
+     sudo apt install -y postgresql postgresql-client
+     ```
+
+   Official PostgreSQL download/install docs: https://www.postgresql.org/download/
+
+   If the commands above are not recognized after installation, add PostgreSQL's `bin` folder to your PATH, then restart the terminal.
+
+   Verify your CLI tools are available:
+
+   ```bash
+   psql --version
+   pg_isready --version
+   ```
+
+    If `createdb` is installed, you can also verify it with:
+
+    ```bash
+    createdb --version
+    ```
+
+   Verify PostgreSQL is reachable on localhost:
+
+   ```bash
+   pg_isready -h localhost -p 5432
+   ```
+
+3. Clone the repo
 
   ```bash
   git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
   cd PE-Hackathon-Template-2026
   ```
 
-3. Install dependencies
+4. Install dependencies
 
   ```bash
   uv sync
   ```
 
-4. Create the local `.env` file
+5. Create the local `.env` file
 
    Choose the command for your platform:
 
@@ -221,19 +272,27 @@ Access observability tools:
      cp .env.example .env
      ```
 
-5. Create the database
+6. Create the database
 
   ```bash
   createdb hackathon_db
   ```
 
-6. Run the app
+    If `createdb` is not available, use:
+
+    ```bash
+    psql -U postgres -c "CREATE DATABASE hackathon_db;"
+    ```
+
+    Use whichever command fits your installation. `createdb` is the simpler option when it is available; `psql` is the fallback.
+
+7. Run the app
 
   ```bash
   uv run run.py
   ```
 
-7. Check the app
+8. Check the app
 
   ```bash
   curl http://localhost:5000/health

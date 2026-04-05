@@ -19,6 +19,8 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
+If this fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 Verify key paths:
 
 ```bash

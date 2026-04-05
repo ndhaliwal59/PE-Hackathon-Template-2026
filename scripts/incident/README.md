@@ -12,6 +12,8 @@ These scripts trigger the three Prometheus alerts. Use only on a **local / demo*
 
 2. Stack up: `docker compose up -d --build`
 
+   If this fails because Docker is not running, see [TROUBLESHOOTING.md](../../docs/TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 3. Optional: `INCIDENT_BASE_URL` (default `http://localhost`) if you use another host/port. Through **nginx** use port **80** (default URL is correct).
 
 ## Scripts
@@ -29,7 +31,7 @@ This is separate from the Silver alert simulations. It crashes `web2`, keeps tra
 The script starts the required Compose services if they are not already running.
 
 ```bash
-./simulate_web_replica_crash.sh
+./scripts/incident/simulate_web_replica_crash.sh
 ```
 
 Rules use `for: 2m`; keep `DURATION_SEC` at **200** or higher so the alert can fire within the quest window.

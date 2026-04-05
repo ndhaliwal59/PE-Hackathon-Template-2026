@@ -4,6 +4,35 @@ This document covers common issues and their solutions.
 
 ## Docker Compose Issues
 
+### First check: confirm Docker is installed
+
+Run these commands:
+
+```bash
+docker --version
+docker compose version
+```
+
+If either command is not recognized, install Docker before continuing. On Windows or macOS, install Docker Desktop. On Linux, install Docker Engine plus the Compose plugin.
+
+### Docker Compose fails because Docker is not running
+
+**What it looks like:**
+```text
+Cannot connect to the Docker daemon
+error during connect: This error may indicate that the Docker daemon is not running
+unable to get image 'prom/prometheus:v2.55.1': failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified
+```
+
+**Root cause:**
+Docker is installed, but the Docker engine is not currently running, so `docker compose` has nothing to talk to.
+
+**How to fix:**
+1. Make sure Docker is running.
+2. If you use Docker Desktop, open it and wait until it finishes starting.
+3. If you use Docker Engine directly, start the Docker service, for example `sudo systemctl start docker`.
+4. Run `docker compose up -d --build` again.
+
 ### Alertmanager fails to start with "illegal option -" or "no route provided in config"
 
 **What it looks like:**

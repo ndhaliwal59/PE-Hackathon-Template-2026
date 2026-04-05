@@ -89,6 +89,8 @@ docker compose run --rm web1 uv run load_seed.py
 k6 run scripts/k6/limit-test.js
 ```
 
+If either Docker Compose command fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 The test runs 310 VUs for 2 minutes against `http://127.0.0.1` (Nginx). Both thresholds must pass for a valid result.
 
 Reference environment: MacBook Pro, Docker Desktop.

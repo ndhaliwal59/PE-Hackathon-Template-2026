@@ -54,6 +54,8 @@ Fill a small notes table in this section if you want a single place for numbers.
    - macOS: `brew install k6`
    - Other: [k6 install docs](https://grafana.com/docs/k6/latest/set-up/install-k6/)
 
+If `docker compose up --build -d` fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 ### Configure
 
 1. From the repo root, ensure `.env` exists and matches how you want Postgres seeded (same variables as local dev):
@@ -69,6 +71,8 @@ Fill a small notes table in this section if you want a single place for numbers.
 ```bash
 docker compose up --build -d
 ```
+
+If this fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
 
 Seed the database **once** (creates tables and loads CSVs; same as `uv run load_seed.py` locally):
 

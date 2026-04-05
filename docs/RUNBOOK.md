@@ -25,6 +25,8 @@ For the replicated web crash recovery demo, see [RELIABILITY.md](RELIABILITY.md#
 4. Look at the four golden-signal panels (Latency, Traffic, Errors, Saturation) for the time window surrounding the alert.
 5. If you need raw logs: `docker compose logs -f --tail 50 web1 web2 web3`.
 
+If that command fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 ---
 
 ## Alert: ServiceDown (severity: critical)

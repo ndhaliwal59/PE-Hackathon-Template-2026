@@ -20,6 +20,9 @@ If you are using Docker Compose, you can also start the full stack with:
 docker compose up -d --build
 ```
 
+If this fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
+
 ## Check metrics
 
 The app exposes a JSON metrics endpoint at `/metrics`:

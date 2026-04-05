@@ -93,6 +93,8 @@ The application is configured to recover automatically if its running process fa
 docker compose up -d --build
 ```
 
+If this fails because Docker is not running, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#docker-compose-fails-because-docker-is-not-running).
+
 2. Confirm the service is healthy before the failure test:
 
 ```powershell
@@ -165,7 +167,7 @@ curl http://localhost:5000/health
 
 This should return 200 OK with the JSON health response.
 
-## HA Recovery Demo (Replica Crash)
+## HA Recovery Demo
 
 This demo extends the single-container Chaos Mode above. Chaos Mode kills the lone `app` container and proves automatic restart. This section is about the replicated HA path: one web replica fails, Nginx keeps serving through the remaining replicas, and `web2` comes back through the normal restart policy.
 
