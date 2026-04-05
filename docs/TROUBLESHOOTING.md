@@ -66,6 +66,8 @@ See [SCALABILITY.md](SCALABILITY.md) for load-testing guidance and Redis caching
 ## Additional Help
 
 Refer to the detailed documentation:
+- [DEPLOY.md](DEPLOY.md) — deployment and rollback steps
+- [CONFIG.md](CONFIG.md) — environment variable reference
 - [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md) — monitoring, alerting, and incident runbook
 - [RELIABILITY.md](RELIABILITY.md) — error handling and chaos-mode verification
 - [RUNBOOK.md](RUNBOOK.md) — on-call incident procedures

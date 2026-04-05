@@ -68,11 +68,15 @@ Silver adds **Prometheus** (rules + scraping), **Blackbox** (synthetic health th
 1. Create a Discord incoming webhook for your channel.
 2. Set `DISCORD_WEBHOOK_URL` in `.env` (see [`.env.example`](../.env.example)). If unset, Compose uses a placeholder URL so stacks still start; Discord will reject notifications until you set a real webhook.
 
+For full environment variable details, see [CONFIG.md](CONFIG.md).
+
 ### Start the stack
 
 ```bash
 docker compose up -d --build
 ```
+
+For deployment and rollback steps, see [DEPLOY.md](DEPLOY.md).
 
 - Prometheus UI: [http://localhost:9090](http://localhost:9090)
 - Alertmanager UI: [http://localhost:9093](http://localhost:9093)

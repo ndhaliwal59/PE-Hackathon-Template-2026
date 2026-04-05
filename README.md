@@ -13,6 +13,8 @@ Two setup options are available:
 ## Documentation
 
 - [API.md](docs/API.md)
+- [DEPLOY.md](docs/DEPLOY.md)
+- [CONFIG.md](docs/CONFIG.md)
 - [RELIABILITY.md](docs/RELIABILITY.md)
 - [INCIDENT_RESPONSE.md](docs/INCIDENT_RESPONSE.md)
 - [RUNBOOK.md](docs/RUNBOOK.md)
@@ -72,6 +74,8 @@ scripts/
 README.md
 docs/
   API.md
+  DEPLOY.md
+  CONFIG.md
   RELIABILITY.md
   INCIDENT_RESPONSE.md
   RUNBOOK.md
