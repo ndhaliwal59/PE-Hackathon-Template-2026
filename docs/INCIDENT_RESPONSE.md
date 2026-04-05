@@ -108,6 +108,36 @@ Alerts use `for: 2m` and 15s scrape/evaluation intervals so firing stays **withi
 - Blackbox modules: [`monitoring/blackbox.yml`](../monitoring/blackbox.yml)
 - Alertmanager template (Discord webhook placeholder): [`monitoring/alertmanager.yml.tpl`](../monitoring/alertmanager.yml.tpl)
 
+## Auto-Healer (Automatic Remediation)
+
+The stack includes an **auto-healer** sidecar service that receives Alertmanager webhooks and automatically restarts stopped services.
+
+### How it works
+
+1. Prometheus fires a **ServiceDown** alert (blackbox probe to nginx fails for 2+ minutes).
+2. Alertmanager sends the alert to **both** Discord (notification) and the auto-healer (remediation).
+3. The auto-healer starts nginx and any stopped web replicas via the Docker API.
+
+The alert has a **60-second cooldown** to prevent restart loops from rapid-fire alerts.
+
+### Logs
+
+View auto-healer activity:
+
+```bash
+docker compose logs -f auto-healer
+```
+
+### Health check
+
+```bash
+curl http://localhost:5001/health
+```
+
+Note: port 5001 is only reachable from inside the Docker network by default. To expose it on the host, add `ports: ["5001:5001"]` to the `auto-healer` service in `docker-compose.yml`.
+
+---
+
 ## Gold (Grafana Dashboard, Runbook, Sherlock Mode)
 
 Gold adds a **Grafana** dashboard covering all four golden signals (Latency, Traffic, Errors, Saturation) plus availability and alert-visibility panels, a written **Runbook** for 3 AM incidents, and a **Sherlock Mode** walkthrough demonstrating root-cause diagnosis from the dashboard.

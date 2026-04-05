@@ -7,8 +7,16 @@ route:
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 12h
+  routes:
+    - receiver: auto-healer
+      continue: true
+    - receiver: discord
 
 receivers:
   - name: discord
     discord_configs:
       - webhook_url: "__DISCORD_WEBHOOK_URL__"
+  - name: auto-healer
+    webhook_configs:
+      - url: "http://auto-healer:5001/webhook"
+        send_resolved: true

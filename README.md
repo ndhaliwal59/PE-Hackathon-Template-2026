@@ -58,6 +58,11 @@ flowchart LR
   Blackbox --> Nginx
 
   Prometheus --> Alertmanager[Alertmanager]
+  Alertmanager --> AutoHealer["auto-healer"]
+  AutoHealer -->|"starts if down"| Nginx
+  AutoHealer -->|"starts if down"| Web1
+  AutoHealer -->|"starts if down"| Web2
+  AutoHealer -->|"starts if down"| Web3
   Grafana[Grafana] --> Prometheus
 ```
 
@@ -70,6 +75,7 @@ app/
   models/
   routes/
   data/
+auto-healer/
 frontend/
 monitoring/
 nginx/

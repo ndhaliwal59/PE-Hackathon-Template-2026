@@ -102,6 +102,14 @@ services:
     ports:
       - "9093:9093"
 
+  auto-healer:
+    build: ./auto-healer
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - alertmanager
+
   grafana:
     image: grafana/grafana:11.4.0
     restart: unless-stopped
