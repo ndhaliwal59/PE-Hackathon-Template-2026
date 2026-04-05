@@ -31,9 +31,12 @@ k6 run scripts/k6/bronze-baseline.js
 
 Optional: `BASE_URL=http://127.0.0.1:5000 k6 run scripts/k6/bronze-baseline.js`
 
-**What to save for judging**
+**Baseline load test output**
+[Bronze k6 output](assets/evidence/scalability/bronze-k6-50vus.txt)
 
-- Screenshot of the terminal summary showing **50 VUs** (`vus_max`, or “50 looping VUs”).
+**Evidence items to capture**
+
+- Terminal text showing **50 VUs** (`vus_max`, or “50 looping VUs”).
 - **p95** from `http_req_duration` (line `p(95)=...`).
 - **Error rate** from `http_req_failed`.
 
@@ -101,7 +104,13 @@ BASE_URL=http://127.0.0.1:8080 k6 run scripts/k6/silver-horde.js
 
 The script asserts **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%**. Traffic mix matches Bronze (mostly **`/s/...`** — same shape as [`scripts/k6/bronze-baseline.js`](../scripts/k6/bronze-baseline.js)).
 
-### Proof for judging
+**Compose services showing multiple replicas and nginx**
+[Silver docker compose ps](assets/evidence/scalability/silver-docker-compose-ps.txt)
+
+**Silver load test output**
+[Silver k6 output](assets/evidence/scalability/silver-k6-200vus.txt)
+
+### Required evidence
 
 - **`docker ps`** — expect **3** app containers (image built from this repo), **1** `nginx`, **1** `postgres`.
 - **k6 summary** — **200** VUs (`vus_max` / “200 looping VUs”), **p(95)** on `http_req_duration`, and threshold pass/fail.
@@ -159,6 +168,9 @@ Optional: confirm cache headers (first request may be **MISS**, repeat the same 
 curl -s -o /dev/null -D - http://127.0.0.1/s/BqJLDM | grep -i x-cache
 ```
 
+**Cache verification showing MISS then HIT**
+[Gold cache proof](assets/evidence/scalability/gold-cache-hit-miss.txt)
+
 ### Load test (500 VUs)
 
 ```bash
@@ -170,6 +182,9 @@ Export a summary JSON (optional):
 ```bash
 k6 run --summary-export=scripts/k6/summary-gold.json scripts/k6/gold-tsunami.js
 ```
+
+**Gold load test output**
+[Gold k6 output](assets/evidence/scalability/gold-k6-500vus.txt)
 
 The script uses **500 VUs** for **2m**, with thresholds **p(95) &lt; 3000 ms** and **http_req_failed &lt; 5%** (same traffic shape as Bronze/Silver: mostly **`/s/...`**).
 

@@ -1,0 +1,13 @@
+﻿NAME                                        IMAGE                                    COMMAND                  SERVICE        CREATED             STATUS                       PORTS
+pe-hackathon-template-2026-alertmanager-1   prom/alertmanager:v0.28.1                "/bin/sh /entrypointΓÇª"   alertmanager   About an hour ago   Up About an hour             0.0.0.0:9093->9093/tcp, [::]:9093->9093/tcp
+pe-hackathon-template-2026-app-1            pe-hackathon-template-2026-app           "tini -- gunicorn -wΓÇª"   app            About an hour ago   Up About an hour             0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp
+pe-hackathon-template-2026-auto-healer-1    pe-hackathon-template-2026-auto-healer   "python healer.py"       auto-healer    About an hour ago   Up About an hour             5001/tcp
+pe-hackathon-template-2026-blackbox-1       prom/blackbox-exporter:v0.25.0           "/bin/blackbox_exporΓÇª"   blackbox       About an hour ago   Up About an hour             9115/tcp
+pe-hackathon-template-2026-grafana-1        grafana/grafana:11.4.0                   "/run.sh"                grafana        About an hour ago   Up About an hour             0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+pe-hackathon-template-2026-nginx-1          nginx:1.27-alpine                        "/docker-entrypoint.ΓÇª"   nginx          About an hour ago   Up About an hour             0.0.0.0:80->80/tcp, [::]:80->80/tcp
+pe-hackathon-template-2026-postgres-1       postgres:16-alpine                       "docker-entrypoint.sΓÇª"   postgres       About an hour ago   Up About an hour (healthy)   5432/tcp
+pe-hackathon-template-2026-prometheus-1     prom/prometheus:v2.55.1                  "/bin/prometheus --cΓÇª"   prometheus     About an hour ago   Up About an hour             0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
+pe-hackathon-template-2026-redis-1          redis:7-alpine                           "docker-entrypoint.sΓÇª"   redis          About an hour ago   Up About an hour (healthy)   6379/tcp
+pe-hackathon-template-2026-web1-1           pe-hackathon-template-2026-web1          "tini -- gunicorn -wΓÇª"   web1           About an hour ago   Up About an hour             5000/tcp
+pe-hackathon-template-2026-web2-1           pe-hackathon-template-2026-web2          "tini -- gunicorn -wΓÇª"   web2           About an hour ago   Up About an hour             5000/tcp
+pe-hackathon-template-2026-web3-1           pe-hackathon-template-2026-web3          "tini -- gunicorn -wΓÇª"   web3           About an hour ago   Up About an hour             5000/tcp
