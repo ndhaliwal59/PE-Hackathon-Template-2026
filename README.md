@@ -17,6 +17,7 @@ Two setup options are available:
 - [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
 - [RUNBOOK.md](RUNBOOK.md)
 - [SCALABILITY.md](SCALABILITY.md)
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Architecture
 

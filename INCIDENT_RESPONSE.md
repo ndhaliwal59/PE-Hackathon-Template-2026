@@ -2,6 +2,8 @@
 
 This document covers the Bronze and Silver incident response quests for this repo.
 
+**Troubleshooting:** If you encounter startup or runtime issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common problems and solutions.
+
 ## Run the app
 
 Start the app the same way as the rest of the project:
