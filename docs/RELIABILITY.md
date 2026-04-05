@@ -90,6 +90,9 @@ The application returns JSON error responses so API clients can handle failures 
 
 Returning JSON instead of default HTML error pages gives clients a consistent failure format, makes error handling simpler, and avoids exposing internal traceback details in normal API responses.
 
+**Error handling endpoint proof**
+![Gold error handling endpoint proof](assets/evidence/reliability/gold-error-handling-endpoint-proof.png)
+
 **Live demo:** Invalid/garbage input returns a controlled error response instead of an unhandled failure.
 Video: https://youtube.com/shorts/HejXgdybKMM
 
