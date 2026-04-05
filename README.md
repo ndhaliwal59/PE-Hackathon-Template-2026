@@ -1,209 +1,158 @@
-# MLH PE Hackathon — Flask + Peewee + PostgreSQL Template
+# PE Hackathon Template
 
-A minimal hackathon starter template. You get the scaffolding and database wiring — you build the models, routes, and CSV loading logic.
+Starter app for the MLH PE Hackathon.
+Includes Flask, PostgreSQL, Peewee models, JSON logging, metrics, and seed loading.
 
-**Stack:** Flask · Peewee ORM · PostgreSQL · uv
+## Getting Started
 
-For the built-in URL shortener (HTTP routes and loading seed CSVs), see **[URL_SHORTENER.md](URL_SHORTENER.md)**.
+Two setup options are available:
+- [Docker Compose - easiest option and fastest path](#docker-compose-recommended)
+- [Local setup - uv + PostgreSQL](#local-setup-uv--postgresql)
 
-## **Important**
+## Documentation
 
-You need to work with around the seed files that you can find in [MLH PE Hackathon](https://mlh-pe-hackathon.com) platform. This will help you build the schema for the database and have some data to do some testing and submit your project for judging. If you need help with this, reach out on Discord or on the Q&A tab on the platform.
+- [API.md](API.md)
+- [RELIABILITY.md](RELIABILITY.md)
+- [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md)
+- [SCALABILITY.md](SCALABILITY.md)
 
-## Prerequisites
+## Architecture
 
-- **uv** — a fast Python package manager that handles Python versions, virtual environments, and dependencies automatically.
-  Install it with:
-
-  ```bash
-  # macOS / Linux
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-
-  # Windows (PowerShell)
-  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-  ```
-
-  For other methods see the [uv installation docs](https://docs.astral.sh/uv/getting-started/installation/).
-
-- PostgreSQL running locally (you can use Docker or a local instance)
-
-## uv Basics
-
-`uv` manages your Python version, virtual environment, and dependencies automatically — no manual `python -m venv` needed.
-
-| Command               | What it does                                             |
-| --------------------- | -------------------------------------------------------- |
-| `uv sync`             | Install all dependencies (creates `.venv` automatically) |
-| `uv run <script>`     | Run a script using the project's virtual environment     |
-| `uv add <package>`    | Add a new dependency                                     |
-| `uv remove <package>` | Remove a dependency                                      |
-
-## Quick Start
-
-```bash
-# 1. Clone the repo
-git clone <repo-url> && cd mlh-pe-hackathon
-
-# 2. Install dependencies
-uv sync
-
-# 3. Create the database
-createdb hackathon_db
-
-# 4. Configure environment
-cp .env.example .env   # edit if your DB credentials differ
-
-# 5. Run the server
-uv run run.py
-
-# 6. Verify
-curl http://localhost:5000/health
-# → {"status":"ok"}
+```mermaid
+flowchart LR
+    Client[Browser or curl] --> App[Flask app]
+    App --> DB[(PostgreSQL)]
+    App --> Logs[JSON logs]
+    App --> Metrics["/metrics"]
 ```
-
-## Reliability
-
-For Bronze, Silver, and Gold reliability guidance, see [RELIABILITY.md](RELIABILITY.md).
-
-## Incident Response Bronze
-
-For incident response setup, metrics, and log viewing, see [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md).
-
-## Scalability
-
-For Bronze, Silver, and Gold scalability guidance, see [SCALABILITY.md](SCALABILITY.md).
 
 ## Project Structure
 
-```
-mlh-pe-hackathon/
-├── app/
-│   ├── __init__.py          # App factory (create_app)
-│   ├── database.py          # DatabaseProxy, BaseModel, connection hooks
-│   ├── models/
-│   │   └── __init__.py      # Import your models here
-│   └── routes/
-│       └── __init__.py      # register_routes() — add blueprints here
-├── .env.example             # DB connection template
-├── .gitignore               # Python + uv gitignore
-├── .python-version          # Pin Python version for uv
-├── pyproject.toml           # Project metadata + dependencies
-├── run.py                   # Entry point: uv run run.py
-└── README.md
+```text
+app/
+  models/
+  routes/
+  data/
+API.md
+README.md
+RELIABILITY.md
+INCIDENT_RESPONSE.md
+SCALABILITY.md
+run.py
+load_seed.py
 ```
 
-## How to Add a Model
+## Docker Compose (recommended)
 
-1. Create a file in `app/models/`, e.g. `app/models/product.py`:
+### What you need
 
-```python
-from peewee import CharField, DecimalField, IntegerField
+- Docker Desktop for Windows/macOS
+- Docker Engine + Docker Compose plugin for Linux
 
-from app.database import BaseModel
+Docker download/install reference:
+https://www.docker.com/products/docker-desktop/
 
+Verify:
 
-class Product(BaseModel):
-    name = CharField()
-    category = CharField()
-    price = DecimalField(decimal_places=2)
-    stock = IntegerField()
+```bash
+docker --version
+docker compose version
 ```
 
-2. Import it in `app/models/__init__.py`:
+Clone the repo:
 
-```python
-from app.models.product import Product
+```bash
+git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
+cd PE-Hackathon-Template-2026
 ```
 
-3. Create the table (run once in a Python shell or a setup script):
+Run:
 
-```python
-from app.database import db
-from app.models.product import Product
-
-db.create_tables([Product])
+```bash
+docker compose up -d --build
 ```
 
-## How to Add Routes
+Check:
 
-1. Create a blueprint in `app/routes/`, e.g. `app/routes/products.py`:
-
-```python
-from flask import Blueprint, jsonify
-from playhouse.shortcuts import model_to_dict
-
-from app.models.product import Product
-
-products_bp = Blueprint("products", __name__)
-
-
-@products_bp.route("/products")
-def list_products():
-    products = Product.select()
-    return jsonify([model_to_dict(p) for p in products])
+```bash
+curl http://localhost:5000/health
 ```
 
-2. Register it in `app/routes/__init__.py`:
+---
 
-```python
-def register_routes(app):
-    from app.routes.products import products_bp
-    app.register_blueprint(products_bp)
+## Local Setup (uv + PostgreSQL)
+
+### What you need
+
+- uv
+- PostgreSQL running on `localhost:5432`
+
+Install uv:
+
+Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-## How to Load CSV Data
+macOS / Linux:
 
-```python
-import csv
-from peewee import chunked
-from app.database import db
-from app.models.product import Product
-
-def load_csv(filepath):
-    with open(filepath, newline="") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
-
-    with db.atomic():
-        for batch in chunked(rows, 100):
-            Product.insert_many(batch).execute()
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Useful Peewee Patterns
+Official uv installation docs:
+https://docs.astral.sh/uv/getting-started/installation/
 
-```python
-from peewee import fn
-from playhouse.shortcuts import model_to_dict
+Clone the repo:
 
-# Select all
-products = Product.select()
-
-# Filter
-cheap = Product.select().where(Product.price < 10)
-
-# Get by ID
-p = Product.get_by_id(1)
-
-# Create
-Product.create(name="Widget", category="Tools", price=9.99, stock=50)
-
-# Convert to dict (great for JSON responses)
-model_to_dict(p)
-
-# Aggregations
-avg_price = Product.select(fn.AVG(Product.price)).scalar()
-total = Product.select(fn.SUM(Product.stock)).scalar()
-
-# Group by
-from peewee import fn
-query = (Product
-         .select(Product.category, fn.COUNT(Product.id).alias("count"))
-         .group_by(Product.category))
+```bash
+git clone https://github.com/ndhaliwal59/PE-Hackathon-Template-2026/
+cd PE-Hackathon-Template-2026
 ```
 
-## Tips
+Install dependencies:
 
-- Use `model_to_dict` from `playhouse.shortcuts` to convert model instances to dictionaries for JSON responses.
-- Wrap bulk inserts in `db.atomic()` for transactional safety and performance.
-- The template uses `teardown_appcontext` for connection cleanup, so connections are closed even when requests fail.
-- Check `.env.example` for all available configuration options.
+```bash
+uv sync
+```
+
+Create local `.env` file:
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS / Linux:
+
+```bash
+cp .env.example .env
+```
+
+Create database:
+
+```bash
+createdb hackathon_db
+```
+
+Run app:
+
+```bash
+uv run run.py
+```
+
+Check:
+
+```bash
+curl http://localhost:5000/health
+```
+
+## Seed Data
+
+After app and database are ready:
+
+```bash
+uv run load_seed.py
+```
